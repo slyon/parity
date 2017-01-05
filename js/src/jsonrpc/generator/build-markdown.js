@@ -100,7 +100,7 @@ function buildExample (name, method) {
 }
 
 Object.keys(interfaces).sort().forEach((group) => {
-  preamble = `${preamble}\n- [${group}](#${group})`;
+  preamble = `${preamble}\n- [${group}](#${group.toLowerCase()})`;
   markdown = `${markdown}\n## ${group}\n`;
 
   const content = Object.keys(interfaces[group]).sort().map((iname) => {
@@ -112,7 +112,7 @@ Object.keys(interfaces).sort().forEach((group) => {
     const returns = formatType(method.returns);
     const example = buildExample(name, method);
 
-    markdown = `${markdown}\n- [${name}](#${name})`;
+    markdown = `${markdown}\n- [${name}](#${name.toLowerCase()})`;
     return `### ${name}\n\n${desc}\n\n#### parameters\n\n${params || 'none'}\n\n#### returns\n\n${returns || 'none'}${example}`;
   });
 
