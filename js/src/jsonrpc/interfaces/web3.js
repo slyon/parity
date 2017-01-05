@@ -32,13 +32,13 @@ export default {
     params: [
       {
         type: String,
-        desc: 'The data to convert into a SHA3 hash',
+        desc: 'The data to convert into a SHA3 hash.',
         example: '0x68656c6c6f20776f726c64'
       }
     ],
     returns: {
       type: Data,
-      desc: 'The SHA3 result of the given string',
+      desc: 'The Keccak-256 hash of the given string.',
       example: '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
     }
   }

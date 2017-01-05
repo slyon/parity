@@ -26,7 +26,7 @@ let markdown = '';
 
 function formatDescription (obj, prefix = '', indent = '') {
   const optional = obj.optional ? '(optional) ' : '';
-  const defaults = obj.default ? `(default: ${obj.default}) ` : '';
+  const defaults = obj.default ? `(default: \`${obj.default})\` ` : '';
 
   return `${indent}- ${prefix}\`${obj.type.name}\` - ${optional}${defaults}${obj.desc}`;
 }
@@ -63,6 +63,11 @@ function hasExample (obj) {
 }
 
 function buildExample (name, method) {
+  // deprecated, don't care
+  if (method.deprecated) {
+    return '';
+  }
+
   const hasReqExample = method.params.every(hasExample);
   const hasResExample = hasExample(method.returns);
 
