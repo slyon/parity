@@ -22,7 +22,8 @@ export default {
     params: [],
     returns: {
       type: Boolean,
-      desc: '`true` when listening, otherwise `false`.'
+      desc: '`true` when listening, otherwise `false`.',
+      example: true
     }
   },
 
@@ -32,7 +33,8 @@ export default {
     returns: {
       type: Quantity,
       desc: 'Integer of the number of connected peers',
-      format: 'utils.toDecimal'
+      format: 'utils.toDecimal',
+      example: '0x2'
     }
   },
 
@@ -41,7 +43,8 @@ export default {
     params: [],
     returns: {
       type: String,
-      desc: 'The current network protocol version'
+      desc: 'The current network protocol version',
+      example: '8995'
     }
   }
 };

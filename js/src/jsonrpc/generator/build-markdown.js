@@ -45,25 +45,73 @@ function formatType (obj) {
   return obj;
 }
 
-Object.keys(interfaces).sort().forEach((group) => {
-  let content = '';
+const rpcReqTemplate = {
+  jsonrpc: '2.0',
+  method: 'web3_clientVersion',
+  params: [],
+  id: 1
+};
 
+const rpcResTemplate = {
+  id: 1,
+  jsonrpc: '2.0',
+  result: null
+};
+
+function hasExample (obj) {
+  return obj.example !== undefined;
+}
+
+function buildExample (name, method) {
+  const hasReqExample = method.params.every(hasExample);
+  const hasResExample = hasExample(method.returns);
+
+  if (!hasReqExample && !hasResExample) {
+    console.error(`ERROR: ${name} has no examples`);
+
+    return '';
+  }
+
+  const examples = [];
+
+  if (hasReqExample) {
+    const params = method.params.map(({ example }) => example);
+    const req = JSON.stringify(Object.assign({}, rpcReqTemplate, { method: name, params })).replace(/"\$DUMMY\$"/g, '{ ... }');
+
+    examples.push(`# Request\ncurl -H "Content-Type: application/json" -X POST --data '${req}' localhost:8545\n`);
+  } else {
+    console.warn(`WARN: ${name} has a response example but not a request example`);
+  }
+
+  if (hasResExample) {
+    const res = JSON.stringify(Object.assign({}, rpcResTemplate, { result: method.returns.example }), null, '  ').replace(/"\$DUMMY\$"/g, '{ ... }');
+
+    examples.push(`# Response\n${res}\n`);
+  } else {
+    console.warn(`WARN: ${name} has a request example but not a response example`);
+  }
+
+  return `\n\n#### example\n\n\`\`\`bash\n${examples.join('\n')}\`\`\``;
+}
+
+Object.keys(interfaces).sort().forEach((group) => {
   preamble = `${preamble}\n- [${group}](#${group})`;
   markdown = `${markdown}\n## ${group}\n`;
 
-  Object.keys(interfaces[group]).sort().forEach((iname) => {
+  const content = Object.keys(interfaces[group]).sort().map((iname) => {
     const method = interfaces[group][iname];
     const name = `${group}_${iname}`;
     const deprecated = method.deprecated ? ' (Deprecated and not supported, to be removed in a future version)' : '';
     const desc = `${method.desc}${deprecated}`;
     const params = method.params.map(formatType).join('\n');
     const returns = formatType(method.returns);
+    const example = buildExample(name, method);
 
     markdown = `${markdown}\n- [${name}](#${name})`;
-    content = `${content}### ${name}\n\n${desc}\n\n#### parameters\n\n${params || 'none'}\n\n#### returns\n\n${returns || 'none'}\n\n`;
+    return `### ${name}\n\n${desc}\n\n#### parameters\n\n${params || 'none'}\n\n#### returns\n\n${returns || 'none'}${example}`;
   });
 
-  markdown = `${markdown}\n\n${content}`;
+  markdown = `${markdown}\n\n${content.join('\n\n---\n\n')}\n\n`;
 });
 
 fs.writeFileSync(MARKDOWN, `${preamble}\n\n${markdown}`, 'utf8');

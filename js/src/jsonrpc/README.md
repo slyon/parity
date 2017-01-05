@@ -15,6 +15,6 @@ JSON file of all ethereum's rpc methods supported by parity
     - `{ type: [Array|Boolean|Object|String|...], desc: 'some description' }`
     - Types are built-in JS types or those defined in `src/types.js` (e.g. `BlockNumber`, `Quantity`, etc.)
     - If a formatter is required, add it as `format: 'string-type'`
-0. Run the lint & tests, `npm run lint && npm run testOnce`
+0. Run the lint & tests, `npm run lint && npm run test`
 0. Generate via `npm run build` which outputs `index.js`, `index.json` & `interfaces.md` (Only required until Travis is fully in-place)
 0. Check-in and make a PR
