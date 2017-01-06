@@ -62,14 +62,77 @@ const rpcReqTemplate = {
   id: 1
 };
 
-const rpcResTemplate = {
-  id: 1,
-  jsonrpc: '2.0',
-  result: null
-};
+// Checks if a field definition has an example, or describes an object
+// with fields that recursively have examples of their own.
+function hasExample ({ example, details }) {
+  if (example !== undefined) {
+    return true;
+  }
 
-function hasExample (obj) {
-  return obj.example !== undefined;
+  if (details !== undefined) {
+    const values = Object.keys(details).map((key) => details[key]);
+
+    return values.every(hasExample);
+  }
+
+  return false;
+}
+
+// Grabs JSON compatible
+function getExample (obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(getExample);
+  }
+
+  const { example, details } = obj;
+
+  if (example === undefined && details !== undefined) {
+    const nested = {};
+
+    Object.keys(details).forEach((key) => {
+      example[key] = getExample(details[key]);
+    });
+
+    return nested;
+  }
+
+  return example;
+}
+
+function stringifyExample (example, dent = '') {
+  const indent = `${dent}  `;
+
+  if (example == null) {
+    return JSON.stringify(example);
+  }
+
+  if (example.constructor === Array) {
+    const last = example.length - 1;
+    const elements = example.map((value, index) => {
+      const comma = index !== last ? ',' : '';
+      const comment = value._comment ? ` # ${value._comment}` : '';
+
+      return `${stringifyExample(value, indent)}${comma}${comment}`;
+    });
+
+    return `[\n${indent}${elements.join(`\n${indent}`)}\n${dent}]`;
+  }
+
+  if (example.constructor === Object) {
+    const keys = Object.keys(example);
+    const last = keys.length - 1;
+    const elements = keys.map((key, index) => {
+      const value = example[key];
+      const comma = index !== last ? ',' : '';
+      const comment = example[key]._comment ? ` # ${example[key]._comment}` : '';
+
+      return `${JSON.stringify(key)}: ${stringifyExample(value, indent)}${comma}${comment}`;
+    });
+
+    return `{\n${indent}${elements.join(`\n${indent}`)}\n${dent}}`;
+  }
+
+  return JSON.stringify(example);
 }
 
 function buildExample (name, method) {
@@ -90,33 +153,38 @@ function buildExample (name, method) {
   const examples = [];
 
   if (hasReqExample) {
-    const params = method.params.map(({ example }) => example);
+    const params = getExample(method.params);
     const req = JSON.stringify(Object.assign({}, rpcReqTemplate, { method: name, params })).replace(DUMMY, '{ ... }');
 
-    examples.push(`# Request\ncurl --data '${req}' -H "Content-Type: application/json" -X POST localhost:8545\n`);
+    examples.push(`# Request\ncurl --data '${req}' -H "Content-Type: application/json" -X POST localhost:8545`);
   } else {
     warn(`${name} has a response example but not a request example`);
   }
 
   if (hasResExample) {
-    const res = JSON.stringify(Object.assign({}, rpcResTemplate, { result: method.returns.example }), null, '  ').replace(DUMMY, '{ ... }');
-
-    examples.push(`# Response\n${res}\n`);
+    const res = stringifyExample(getExample(method.returns), '  ').replace(DUMMY, '{ ... }');
+    examples.push(`# Response\n{\n  "id": 1,\n  "jsonrpc": "2.0",\n  "result": ${res}\n}`);
   } else {
     warn(`${name} has a request example but not a response example`);
   }
 
-  return `\n\n#### example\n\n\`\`\`bash\n${examples.join('\n')}\`\`\``;
+  return `\n\n#### example\n\n\`\`\`bash\n${examples.join('\n\n')}\n\`\`\``;
 }
 
 Object.keys(interfaces).sort().forEach((group) => {
   let preamble = `# The \`${group}\` Module`;
   let markdown = `## JSON RPC methods\n`;
 
+  const spec = interfaces[group];
+
+  if (spec._preamble) {
+    preamble = `${preamble}\n\n${spec._preamble}`;
+  }
+
   const content = [];
 
-  Object.keys(interfaces[group]).sort().map((iname) => {
-    const method = interfaces[group][iname];
+  Object.keys(spec).sort().forEach((iname) => {
+    const method = spec[iname];
     const name = `${group}_${iname}`;
 
     if (method.nodoc || method.deprecated) {
@@ -125,8 +193,7 @@ Object.keys(interfaces).sort().forEach((group) => {
       return;
     }
 
-    const deprecated = method.deprecated ? ' (Deprecated and not supported, to be removed in a future version)' : '';
-    const desc = `${method.desc}${deprecated}`;
+    const desc = method.desc;
     const params = method.params.map(formatType).join('\n');
     const returns = formatType(method.returns);
     const example = buildExample(name, method);

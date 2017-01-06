@@ -15,8 +15,30 @@
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
 import { Address, BlockNumber, Data, Hash, Quantity } from '../types';
+import { withPreamble, withComment, DUMMY } from '../helpers';
 
-export default {
+export default withPreamble(`
+
+## The default block parameter
+
+The following methods have an optional extra \`defaultBlock\` parameter:
+
+- [eth_getBalance](#eth_getbalance)
+- [eth_getCode](#eth_getcode)
+- [eth_getTransactionCount](#eth_gettransactioncount)
+- [eth_getStorageAt](#eth_getstorageat)
+- [eth_call](#eth_call)
+
+When requests are made that act on the state of Ethereum, the last parameter determines the height of the block.
+
+The following options are possible for the \`defaultBlock\` parameter:
+
+- \`QUANTITY\`/\`INT\` - an integer block number;
+- \`STR "earliest"\` for the earliest/genesis block;
+- \`STR "latest"\` - for the latest mined block;
+- \`STR "pending"\` - for the pending state/transactions.
+
+`, {
   accounts: {
     desc: 'Returns a list of addresses owned by client.',
     params: [],
@@ -160,7 +182,7 @@ export default {
         type: Object,
         desc: 'see [eth_sendTransaction](#eth_sendTransaction).',
         format: 'inputCallFormatter',
-        example: '$DUMMY$' // will be replaced with { ... } by the generator
+        example: DUMMY // will be replaced with { ... } by the generator
       }
     ],
     returns: {
@@ -199,7 +221,7 @@ export default {
     returns: {
       type: Quantity,
       desc: 'integer of the current gas price in wei.',
-      example: '0x09184e72a000'
+      example: withComment('0x09184e72a000', '10000000000000')
     }
   },
 
@@ -322,7 +344,7 @@ export default {
         }
       },
       example: {
-        number: '0x1b4', // 436
+        number: withComment('0x1b4', 436),
         hash: '0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331',
         parentHash: '0x9646252be9520f6e71339a8df9c55e4d7619deeb018d2a3f2d21fc165dde5eb5',
         sealFields: ['0xe04d296d2460cfb8472af2c5fd05b5a214109c25688d3704aed5484f9a7792f2', '0x0000000000000042'],
@@ -331,15 +353,15 @@ export default {
         transactionsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
         stateRoot: '0xd5855eb08b3387c0af375e9cdb6acfc05eb8f519e419b874b6ff2ffda7ed1dff',
         miner: '0x4e65fda2159562a496f9f3522f89122a3088497a',
-        difficulty: '0x027f07', // 163591
-        totalDifficulty: '0x027f07', // 163591
+        difficulty: withComment('0x027f07', 163591),
+        totalDifficulty: withComment('0x027f07', 163591),
         extraData: '0x0000000000000000000000000000000000000000000000000000000000000000',
-        size: '0x027f07', // 163591
-        gasLimit: '0x9f759', // 653145
-        minGasPrice: '0x9f759', // 653145
-        gasUsed: '0x9f759', // 653145
-        timestamp: '0x54e34e8e', // 1424182926
-        transactions: ['$DUMMY$', '$DUMMY$'], // will be replaced with [{ ... }, { ... }] by the generator
+        size: withComment('0x027f07', 163591),
+        gasLimit: withComment('0x9f759', 653145),
+        minGasPrice: withComment('0x9f759', 653145),
+        gasUsed: withComment('0x9f759', 653145),
+        timestamp: withComment('0x54e34e8e', 1424182926),
+        transactions: [DUMMY, DUMMY], // will be replaced with [{ ... }, { ... }] by the generator
         uncles: ['0x1606e5...', '0xd5145a9...']
       }
     }
@@ -450,7 +472,7 @@ export default {
           data: '0x0000000000000000000000000000000000000000000000000000000000000000',
           topics: ['0x59ebeb90bc63057b6515673c3ecf9438e5058bca0f92585014eced636878c9a5']
         },
-        '$DUMMY$' // will be replaced with { ... } by the generator
+        DUMMY // will be replaced with { ... } by the generator
       ]
     }
   },
@@ -726,13 +748,16 @@ export default {
       },
       example: {
         transactionHash: '0xb903239f8543d04b5dc1ba6579132b143087c68db1b2168786408fcbce568238',
-        transactionIndex: '0x1', // 1
-        blockNumber: '0xb', // 11
+        transactionIndex: withComment('0x1', 1),
+        blockNumber: withComment('0xb', 11),
         blockHash: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b',
-        cumulativeGasUsed: '0x33bc', // 13244
-        gasUsed: '0x4dc', // 1244
-        contractAddress: '0xb60e8dd61c5d32be8058bb8eb970870f07233155', // or null, if none was created
-        logs: ['$DUMMY$', '$DUMMY$'] // will be replaced with [{ ... }, { ... }] by the generator
+        cumulativeGasUsed: withComment('0x33bc', 13244),
+        gasUsed: withComment('0x4dc', 1244),
+        contractAddress: withComment('0xb60e8dd61c5d32be8058bb8eb970870f07233155', 'or null, if none was created'),
+        logs: withComment(
+          [DUMMY, DUMMY], // will be replaced with [{ ... }, { ... }] by the generator
+          'logs as returned by eth_getFilterLogs, etc.'
+        )
       }
     }
   },
@@ -1079,7 +1104,7 @@ export default {
         type: Object,
         desc: 'see [eth_sendTransaction](#eth_sendTransaction).',
         format: 'inputCallFormatter',
-        example: '$DUMMY$' // will be replaced with { ... } by the generator
+        example: DUMMY // will be replaced with { ... } by the generator
       }
     ],
     returns: {
@@ -1275,4 +1300,4 @@ export default {
       desc: 'whether the call was successful'
     }
   }
-};
+});
