@@ -22,7 +22,7 @@ export default {
     params: [],
     returns: {
       type: Array,
-      desc: '20 Bytes - addresses owned by the client',
+      desc: '20 Bytes - addresses owned by the client.',
       example: ['0x407d73d8a49eeb85d32cf465507dd71d507100c1']
     }
   },
@@ -32,7 +32,7 @@ export default {
     params: [],
     returns: {
       type: Quantity,
-      desc: 'integer of the current block number the client is on',
+      desc: 'integer of the current block number the client is on.',
       example: '0x4b7'
     }
   },
@@ -83,14 +83,14 @@ export default {
       },
       {
         type: BlockNumber,
-        desc: 'Integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter)',
+        desc: 'Integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
         format: 'inputDefaultBlockNumberFormatter',
         example: 'latest'
       }
     ],
     returns: {
       type: Data,
-      desc: 'the return value of executed contract',
+      desc: 'the return value of executed contract.',
       example: '0x5208'
     }
   },
@@ -100,7 +100,7 @@ export default {
     params: [],
     returns: {
       type: Address,
-      desc: 'The current coinbase address',
+      desc: 'The current coinbase address.',
       example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
     }
   },
@@ -110,13 +110,13 @@ export default {
     params: [
       {
         type: String,
-        desc: 'The source code',
+        desc: 'The source code.',
         example: '/* some serpent */'
       }
     ],
     returns: {
       type: Data,
-      desc: 'The compiled source code',
+      desc: 'The compiled source code.',
       example: '0x603880600c6000396000f3006001600060e060020a600035048063c6888fa114601857005b6021600435602b565b8060005260206000f35b600081600702905091905056'
     }
   },
@@ -126,13 +126,13 @@ export default {
     params: [
       {
         type: String,
-        desc: 'The source code',
+        desc: 'The source code.',
         example: 'contract test { function multiply(uint a) returns(uint d) {   return a * 7;   } }'
       }
     ],
     returns: {
       type: Data,
-      desc: 'The compiled source code',
+      desc: 'The compiled source code.',
       example: '0x605880600c6000396000f3006000357c010000000000000000000000000000000000000000000000000000000090048063c6888fa114602e57005b603d6004803590602001506047565b8060005260206000f35b60006007820290506053565b91905056'
     }
   },
@@ -142,13 +142,13 @@ export default {
     params: [
       {
         type: String,
-        desc: 'The source code',
+        desc: 'The source code.',
         example: '(returnlll (suicide (caller)))'
       }
     ],
     returns: {
       type: Data,
-      desc: 'The compiled source code',
+      desc: 'The compiled source code.',
       example: '0x603880600c6000396000f3006001600060e060020a600035048063c6888fa114601857005b6021600435602b565b8060005260206000f35b600081600702905091905056'
     }
   },
@@ -158,20 +158,21 @@ export default {
     params: [
       {
         type: Object,
-        desc: 'see [eth_sendTransaction](#eth_sendTransaction)',
+        desc: 'see [eth_sendTransaction](#eth_sendTransaction).',
         format: 'inputCallFormatter',
         example: '$DUMMY$' // will be replaced with { ... } by the generator
       }
     ],
     returns: {
       type: Quantity,
-      desc: 'The amount of gas used',
+      desc: 'The amount of gas used.',
       format: 'utils.toDecimal',
       example: '0x5208'
     }
   },
 
   fetchQueuedTransactions: {
+    nodoc: 'Not present in Rust code',
     desc: '?',
     params: [
       '?'
@@ -183,6 +184,7 @@ export default {
   },
 
   flush: {
+    nodoc: 'Not present in Rust code',
     desc: '?',
     params: [],
     returns: {
@@ -196,7 +198,7 @@ export default {
     params: [],
     returns: {
       type: Quantity,
-      desc: 'integer of the current gas price in wei',
+      desc: 'integer of the current gas price in wei.',
       example: '0x09184e72a000'
     }
   },
@@ -206,7 +208,7 @@ export default {
     params: [
       {
         type: Address,
-        desc: '20 Bytes - address to check for balance',
+        desc: '20 Bytes - address to check for balance.',
         format: 'inputAddressFormatter',
         example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
       },
@@ -219,7 +221,7 @@ export default {
     ],
     returns: {
       type: Quantity,
-      desc: 'integer of the current balance in wei',
+      desc: 'integer of the current balance in wei.',
       format: 'outputBigNumberFormatter',
       example: '0x0234c8a3397aab58'
     }
@@ -230,18 +232,18 @@ export default {
     params: [
       {
         type: Hash,
-        desc: 'Hash of a block',
+        desc: 'Hash of a block.',
         example: '0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331'
       },
       {
         type: Boolean,
-        desc: 'If `true` it returns the full transaction objects, if `false` only the hashes of the transactions',
+        desc: 'If `true` it returns the full transaction objects, if `false` only the hashes of the transactions.',
         example: true
       }
     ],
     returns: {
       type: Object,
-      desc: 'A block object, or `null` when no block was found',
+      desc: 'A block object, or `null` when no block was found.',
       details: {
         number: {
           type: Quantity,
@@ -353,7 +355,7 @@ export default {
       },
       {
         type: Boolean,
-        desc: 'If `true` it returns the full transaction objects, if `false` only the hashes of the transactions',
+        desc: 'If `true` it returns the full transaction objects, if `false` only the hashes of the transactions.',
         example: true
       }
     ],
@@ -365,13 +367,13 @@ export default {
     params: [
       {
         type: Hash,
-        desc: '32 Bytes - hash of a block',
+        desc: '32 Bytes - hash of a block.',
         example: '0xb903239f8543d04b5dc1ba6579132b143087c68db1b2168786408fcbce568238'
       }
     ],
     returns: {
       type: Quantity,
-      desc: 'integer of the number of transactions in this block',
+      desc: 'integer of the number of transactions in this block.',
       example: '0xb'
     }
   },
@@ -387,7 +389,7 @@ export default {
     ],
     returns: {
       type: Quantity,
-      desc: 'integer of the number of transactions in this block',
+      desc: 'integer of the number of transactions in this block.',
       example: '0xa'
     }
   },
@@ -397,7 +399,7 @@ export default {
     params: [
       {
         type: Address,
-        desc: '20 Bytes - address',
+        desc: '20 Bytes - address.',
         format: 'inputAddressFormatter',
         example: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'
       },
@@ -410,7 +412,7 @@ export default {
     ],
     returns: {
       type: Data,
-      desc: 'the code from the given address',
+      desc: 'the code from the given address.',
       example: '0x600160008035811a818181146012578301005b601b6001356025565b8060005260206000f25b600060078202905091905056'
     }
   },
@@ -420,7 +422,7 @@ export default {
     params: [],
     returns: {
       type: Array,
-      desc: 'Array of available compilers',
+      desc: 'Array of available compilers.',
       example: ['solidity', 'lll', 'serpent']
     }
   },
@@ -430,13 +432,13 @@ export default {
     params: [
       {
         type: Quantity,
-        desc: 'The filter id',
+        desc: 'The filter id.',
         example: '0x16'
       }
     ],
     returns: {
       type: Array,
-      desc: 'Array of log objects, or an empty array if nothing has changed since last poll',
+      desc: 'Array of log objects, or an empty array if nothing has changed since last poll.',
       example: [
         {
           logIndex: '0x1', // 1
@@ -454,6 +456,7 @@ export default {
   },
 
   getFilterChangesEx: {
+    nodoc: 'Not present in Rust code', // https://github.com/ethereum/wiki/wiki/Proposal:-Reversion-Notification
     desc: '?',
     params: [
       '?'
@@ -469,7 +472,7 @@ export default {
     params: [
       {
         type: Quantity,
-        desc: 'The filter id',
+        desc: 'The filter id.',
         example: '0x16'
       }
     ],
@@ -477,6 +480,7 @@ export default {
   },
 
   getFilterLogsEx: {
+    nodoc: 'Not present in Rust code', // https://github.com/ethereum/wiki/wiki/Proposal:-Reversion-Notification
     desc: '?',
     params: [
       '?'
@@ -492,7 +496,7 @@ export default {
     params: [
       {
         type: Object,
-        desc: 'The filter object, see [eth_newFilter parameters](#eth_newfilter)',
+        desc: 'The filter object, see [eth_newFilter parameters](#eth_newfilter).',
         example: {
           topics: ['0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b']
         }
@@ -502,6 +506,7 @@ export default {
   },
 
   getLogsEx: {
+    nodoc: 'Not present in Rust code', // https://github.com/ethereum/wiki/wiki/Proposal:-Reversion-Notification
     desc: '?',
     params: [
       '?'
@@ -517,12 +522,12 @@ export default {
     params: [
       {
         type: Address,
-        desc: '20 Bytes - address of the storage',
+        desc: '20 Bytes - address of the storage.',
         example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
       },
       {
         type: Quantity,
-        desc: 'integer of the position in the storage',
+        desc: 'integer of the position in the storage.',
         format: 'utils.toHex',
         example: '0x0'
       },
@@ -535,7 +540,7 @@ export default {
     ],
     returns: {
       type: Data,
-      desc: 'the value at this storage position',
+      desc: 'the value at this storage position.',
       example: '0x0000000000000000000000000000000000000000000000000000000000000003'
     }
   },
@@ -545,7 +550,7 @@ export default {
     params: [
       {
         type: Hash,
-        desc: '32 Bytes - hash of a transaction',
+        desc: '32 Bytes - hash of a transaction.',
         example: '0xb903239f8543d04b5dc1ba6579132b143087c68db1b2168786408fcbce568238'
       }
     ],
@@ -620,12 +625,12 @@ export default {
     params: [
       {
         type: Hash,
-        desc: 'hash of a block',
+        desc: 'hash of a block.',
         example: '0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331'
       },
       {
         type: Quantity,
-        desc: 'integer of the transaction index position',
+        desc: 'integer of the transaction index position.',
         example: '0x0'
       }
     ],
@@ -642,7 +647,7 @@ export default {
       },
       {
         type: Quantity,
-        desc: 'The transaction index position',
+        desc: 'The transaction index position.',
         example: '0x0'
       }
     ],
@@ -654,7 +659,7 @@ export default {
     params: [
       {
         type: Address,
-        desc: '20 Bytes - address',
+        desc: '20 Bytes - address.',
         example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
       },
       {
@@ -666,7 +671,7 @@ export default {
     ],
     returns: {
       type: Quantity,
-      desc: 'integer of the number of transactions send from this address',
+      desc: 'integer of the number of transactions send from this address.',
       format: 'utils.toDecimal',
       example: '0x1'
     }
@@ -677,7 +682,7 @@ export default {
     params: [
       {
         type: Hash,
-        desc: 'hash of a transaction',
+        desc: 'hash of a transaction.',
         example: '0xb903239f8543d04b5dc1ba6579132b143087c68db1b2168786408fcbce568238'
       }
     ],
@@ -737,7 +742,7 @@ export default {
     params: [
       {
         type: Hash,
-        desc: 'Hash a block',
+        desc: 'Hash a block.',
         example: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b'
       },
       {
@@ -771,13 +776,13 @@ export default {
     params: [
       {
         type: Hash,
-        desc: '32 Bytes - hash of a block',
+        desc: '32 Bytes - hash of a block.',
         example: '0xb903239f8543d04b5dc1ba6579132b143087c68db1b2168786408fcbce568238'
       }
     ],
     returns: {
       type: Quantity,
-      desc: 'integer of the number of uncles in this block',
+      desc: 'integer of the number of uncles in this block.',
       example: '0x1'
     }
   },
@@ -793,7 +798,7 @@ export default {
     ],
     returns: {
       type: Quantity,
-      desc: 'integer of the number of uncles in this block',
+      desc: 'integer of the number of uncles in this block.',
       example: '0x1'
     }
   },
@@ -818,12 +823,13 @@ export default {
     params: [],
     returns: {
       type: Quantity,
-      desc: 'number of hashes per second',
+      desc: 'number of hashes per second.',
       example: '0x38a'
     }
   },
 
   inspectTransaction: {
+    nodoc: 'Not present in Rust code',
     desc: '?',
     params: [
       '?'
@@ -839,7 +845,7 @@ export default {
     params: [],
     returns: {
       type: Boolean,
-      desc: '`true` of the client is mining, otherwise `false`',
+      desc: '`true` of the client is mining, otherwise `false`.',
       example: true
     }
   },
@@ -849,7 +855,7 @@ export default {
     params: [],
     returns: {
       type: Quantity,
-      desc: 'A filter id',
+      desc: 'A filter id.',
       example: '0x1'
     }
   },
@@ -884,7 +890,7 @@ export default {
         },
         limit: {
           type: Number,
-          desc: 'The maximum number of entries to retrieve (latest first)',
+          desc: 'The maximum number of entries to retrieve (latest first).',
           optional: true
         }
       },
@@ -897,12 +903,13 @@ export default {
     }],
     returns: {
       type: Quantity,
-      desc: 'The filter id',
+      desc: 'The filter id.',
       example: '0x1'
     }
   },
 
   newFilterEx: {
+    nodoc: 'Not present in Rust code', // https://github.com/ethereum/wiki/wiki/Proposal:-Reversion-Notification
     desc: '?',
     params: [
       '?'
@@ -918,12 +925,13 @@ export default {
     params: [],
     returns: {
       type: Quantity,
-      desc: 'A filter id',
+      desc: 'A filter id.',
       example: '0x1'
     }
   },
 
   notePassword: {
+    nodoc: 'Not present in Rust code',
     desc: '?',
     params: [
       '?'
@@ -935,6 +943,7 @@ export default {
   },
 
   pendingTransactions: {
+    nodoc: 'Not present in Rust code',
     desc: '?',
     params: [],
     returns: {
@@ -948,12 +957,13 @@ export default {
     params: [],
     returns: {
       type: String,
-      desc: 'The current ethereum protocol version',
+      desc: 'The current ethereum protocol version.',
       example: '0x63'
     }
   },
 
   register: {
+    nodoc: 'Not present in Rust code',
     desc: '?',
     params: [
       '?'
@@ -965,11 +975,11 @@ export default {
   },
 
   sendRawTransaction: {
-    desc: 'Creates new message call transaction or a contract creation for signed transactions.',
+    desc: 'Creates new message call transaction or a contract creation for signed transactions.\n\n**Note:** `eth_submitTransaction` is an alternative alias of this method.',
     params: [
       {
         type: Data,
-        desc: 'The signed transaction data',
+        desc: 'The signed transaction data.',
         example: '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675'
       }
     ],
@@ -985,7 +995,7 @@ export default {
     params: [
       {
         type: Object,
-        desc: 'The transaction object',
+        desc: 'The transaction object.',
         format: 'inputTransactionFormatter',
         details: {
           from: {
@@ -1004,13 +1014,13 @@ export default {
           },
           gasPrice: {
             type: Quantity,
-            desc: 'Integer of the gasPrice used for each paid gas',
+            desc: 'Integer of the gasPrice used for each paid gas.',
             optional: true,
             default: 'To-Be-Determined'
           },
           value: {
             type: Quantity,
-            desc: 'Integer of the value send with this transaction',
+            desc: 'Integer of the value send with this transaction.',
             optional: true
           },
           data: {
@@ -1045,31 +1055,108 @@ export default {
     params: [
       {
         type: Address,
-        desc: '20 Bytes - address',
+        desc: '20 Bytes - address.',
         format: 'inputAddressFormatter',
         example: '0xd1ade25ccd3d550a7eb532ac759cac7be09c2719'
       },
       {
         type: Data,
-        desc: 'Transaction hash to sign',
+        desc: 'Transaction hash to sign.',
         example: 'Schoolbus'
       }
     ],
     returns: {
       type: Data,
-      desc: 'Signed data',
+      desc: 'Signed data.',
       example: '0x2ac19db245478a06032e69cdbd2b54e648b78431d0a47bd1fbab18f79f820ba407466e37adbe9e84541cab97ab7d290f4a64a5825c876d22109f3bf813254e8628'
     }
   },
 
   signTransaction: {
-    desc: '?',
+    desc: 'Signs transactions without dispatching it to the network. It can be later submitted using [eth_sendRawTransaction](#eth_sendrawtransaction).',
     params: [
-      '?'
+      {
+        type: Object,
+        desc: 'see [eth_sendTransaction](#eth_sendTransaction).',
+        format: 'inputCallFormatter',
+        example: '$DUMMY$' // will be replaced with { ... } by the generator
+      }
     ],
     returns: {
-      type: Boolean,
-      desc: 'whether the call was successful'
+      type: Object,
+      desc: 'Signed transaction and it\'s details:',
+      details: {
+        raw: {
+          type: Data,
+          desc: 'The signed, RLP encoded transaction.'
+        },
+        tx: {
+          type: Object,
+          desc: 'Transaction object:',
+          details: {
+            hash: {
+              type: Hash,
+              desc: '32 Bytes - hash of the transaction.'
+            },
+            nonce: {
+              type: Quantity,
+              desc: 'the number of transactions made by the sender prior to this one.'
+            },
+            blockHash: {
+              type: Hash,
+              desc: '32 Bytes - hash of the block where this transaction was in. `null` when its pending.'
+            },
+            blockNumber: {
+              type: BlockNumber,
+              desc: 'block number where this transaction was in. `null` when its pending.'
+            },
+            transactionIndex: {
+              type: Quantity,
+              desc: 'integer of the transactions index position in the block. `null` when its pending.'
+            },
+            from: {
+              type: Address,
+              desc: '20 Bytes - address of the sender.'
+            },
+            to: {
+              type: Address,
+              desc: '20 Bytes - address of the receiver. `null` when its a contract creation transaction.'
+            },
+            value: {
+              type: Quantity,
+              desc: 'value transferred in Wei.'
+            },
+            gasPrice: {
+              type: Quantity,
+              desc: 'gas price provided by the sender in Wei.'
+            },
+            gas: {
+              type: Quantity,
+              desc: 'gas provided by the sender.'
+            },
+            input: {
+              type: Data,
+              desc: 'the data send along with the transaction.'
+            }
+          }
+        }
+      },
+      example: {
+        raw: '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675',
+        tx: {
+          hash: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b',
+          nonce: '0x0',
+          blockHash: '0xbeab0aa2411b7ab17f30a99d3cb9c6ef2fc5426d6ad6fd9e2a26a6aed1d1055b',
+          blockNumber: '0x15df', // 5599
+          transactionIndex: '0x1', // 1
+          from: '0x407d73d8a49eeb85d32cf465507dd71d507100c1',
+          to: '0x85h43d8a49eeb85d32cf465507dd71d507100c1',
+          value: '0x7f110', // 520464
+          gas: '0x7f110', // 520464
+          gasPrice: '0x09184e72a000',
+          input: '0x603880600c6000396000f300603880600c6000396000f3603880600c6000396000f360'
+        }
+      }
     }
   },
 
@@ -1078,7 +1165,7 @@ export default {
     params: [
       {
         type: Data,
-        desc: '8 Bytes - The nonce found (64 bits)',
+        desc: '8 Bytes - The nonce found (64 bits).',
         example: '0x0000000000000001'
       },
       {
@@ -1088,13 +1175,13 @@ export default {
       },
       {
         type: Data,
-        desc: '32 Bytes - The mix digest (256 bits)',
+        desc: '32 Bytes - The mix digest (256 bits).',
         example: '0xD1FE5700000000000000000000000000D1FE5700000000000000000000000000'
       }
     ],
     returns: {
       type: Boolean,
-      desc: '`true` if the provided solution is valid, otherwise `false`',
+      desc: '`true` if the provided solution is valid, otherwise `false`.',
       example: true
     }
   },
@@ -1104,18 +1191,18 @@ export default {
     params: [
       {
         type: Data,
-        desc: 'a hexadecimal string representation (32 bytes) of the hash rate',
+        desc: 'a hexadecimal string representation (32 bytes) of the hash rate.',
         example: '0x0000000000000000000000000000000000000000000000000000000000500000'
       },
       {
         type: Data,
-        desc: 'A random hexadecimal(32 bytes) ID identifying the client',
+        desc: 'A random hexadecimal(32 bytes) ID identifying the client.',
         example: '0x59daa26581d0acd1fce254fb7e85952f4c09d0915afd33d3886cd914bc7d283c'
       }
     ],
     returns: {
       type: Boolean,
-      desc: '`true` if submitting went through succesfully and `false` otherwise',
+      desc: '`true` if submitting went through succesfully and `false` otherwise.',
       example: true
     }
   },
@@ -1125,7 +1212,7 @@ export default {
     params: [],
     returns: {
       type: Object,
-      desc: 'An object with sync status data or `FALSE`, when not syncing',
+      desc: 'An object with sync status data or `FALSE`, when not syncing.',
       format: 'outputSyncingFormatter',
       details: {
         startingBlock: {
@@ -1166,18 +1253,19 @@ export default {
     params: [
       {
         type: Quantity,
-        desc: 'The filter id',
+        desc: 'The filter id.',
         example: '0xb'
       }
     ],
     returns: {
       type: Boolean,
-      desc: '`true` if the filter was successfully uninstalled, otherwise `false`',
+      desc: '`true` if the filter was successfully uninstalled, otherwise `false`.',
       example: true
     }
   },
 
   unregister: {
+    nodoc: 'Not present in Rust code',
     desc: '?',
     params: [
       '?'
