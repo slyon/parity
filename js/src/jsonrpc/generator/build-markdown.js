@@ -93,7 +93,7 @@ function buildExample (name, method) {
     const params = method.params.map(({ example }) => example);
     const req = JSON.stringify(Object.assign({}, rpcReqTemplate, { method: name, params })).replace(DUMMY, '{ ... }');
 
-    examples.push(`# Request\ncurl -H "Content-Type: application/json" -X POST --data '${req}' localhost:8545\n`);
+    examples.push(`# Request\ncurl --data '${req}' -H "Content-Type: application/json" -X POST localhost:8545\n`);
   } else {
     warn(`${name} has a response example but not a request example`);
   }
@@ -135,7 +135,7 @@ Object.keys(interfaces).sort().forEach((group) => {
     content.push(`### ${name}\n\n${desc}\n\n#### parameters\n\n${params || 'none'}\n\n#### returns\n\n${returns || 'none'}${example}`);
   });
 
-  markdown = `${markdown}\n\n## JSON RPC API Reference\n\n***\n\n${content.join('\n\n***\n\n')}\n\n`;
+  markdown = `${markdown}\n\n## JSON RPC API Reference\n\n${content.join('\n\n***\n\n')}\n\n`;
 
   const mdFile = path.join(ROOT_DIR, `${group}.md`);
 
