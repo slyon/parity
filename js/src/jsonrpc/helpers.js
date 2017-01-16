@@ -29,7 +29,9 @@ export function withPreamble (preamble, spec) {
 
 // Enrich any example value with a comment to print in the docs
 export function withComment (example, comment) {
-  if (typeof example === 'object' && example === null) {
+  const constructor = example == null ? null : example.constructor;
+
+  if (constructor === Object || constructor === Array) {
     Object.defineProperty(example, '_comment', {
       value: comment,
       enumerable: false
@@ -40,6 +42,11 @@ export function withComment (example, comment) {
 
   // Convert primitives
   return new PrimitiveWithComment(example, comment);
+}
+
+// Turn a decimal number into a hexadecimal string with comment to it's original value
+export function fromDecimal (decimal) {
+  return withComment(`0x${decimal.toString(16)}`, decimal.toString());
 }
 
 // Internal helper

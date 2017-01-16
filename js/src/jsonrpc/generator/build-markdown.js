@@ -18,6 +18,7 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 
+import { DUMMY } from '../helpers';
 import interfaces from '../';
 
 const ROOT_DIR = path.join(__dirname, '../docs');
@@ -31,20 +32,17 @@ function info (log) { console.log(chalk.blue(`INFO:\t${log}`)); }
 function warn (log) { console.warn(chalk.yellow(`WARN:\t${log}`)); }
 function error (log) { console.error(chalk.red(`ERROR:\t${log}`)); }
 
-// "$DUMMY$" pattern to be replaced with { ... } in the markdown docs
-const DUMMY = /"\$DUMMY\$"/g;
-
 function formatDescription (obj, prefix = '', indent = '') {
   const optional = obj.optional ? '(optional) ' : '';
-  const defaults = obj.default ? `(default: \`${obj.default})\` ` : '';
+  const defaults = obj.default ? `(default: \`${obj.default}\`) ` : '';
 
   return `${indent}- ${prefix}\`${obj.type.name}\` - ${optional}${defaults}${obj.desc}`;
 }
 
 function formatType (obj) {
   if (obj.type === Object && obj.details) {
-    const sub = Object.keys(obj.details).sort().map((key) => {
-      return formatDescription(obj.details[key], `\`${key}\`/`, '    ');
+    const sub = Object.keys(obj.details).map((key) => {
+      return formatDescription(obj.details[key], `\`${key}\`: `, '    ');
     }).join('\n');
 
     return `${formatDescription(obj)}\n${sub}`;
@@ -56,11 +54,23 @@ function formatType (obj) {
 }
 
 const rpcReqTemplate = {
-  jsonrpc: '2.0',
   method: 'web3_clientVersion',
   params: [],
-  id: 1
+  id: 1,
+  jsonrpc: '2.0'
 };
+
+// Checks if the value passed in is a DUMMY object placeholder for `{ ... }``
+function isDummy (val) {
+  return val === DUMMY;
+}
+
+const { isArray } = Array;
+
+// Checks if the value passed is a plain old JS object
+function isObject (val) {
+  return val != null && val.constructor === Object;
+}
 
 // Checks if a field definition has an example, or describes an object
 // with fields that recursively have examples of their own.
@@ -99,40 +109,53 @@ function getExample (obj) {
   return example;
 }
 
-function stringifyExample (example, dent = '') {
+function stringifyExample (example, dent = '', commentMarker = '#') {
   const indent = `${dent}  `;
 
-  if (example == null) {
-    return JSON.stringify(example);
+  if (example === DUMMY) {
+    return '{ ... }';
   }
 
-  if (example.constructor === Array) {
+  if (isArray(example)) {
     const last = example.length - 1;
+
+    // If all elements are dummies, print out a single line
+    if (example.every(isDummy)) {
+      const dummies = example.map(_ => '{ ... }');
+
+      return `[${dummies.join(', ')}]`;
+    }
+
+    // For arrays containing just one object, don't unwind the array to multiline
+    if (last === 0 && isObject(example[0])) {
+      return `[${stringifyExample(example[0], dent, commentMarker)}]`;
+    }
+
     const elements = example.map((value, index) => {
       const comma = index !== last ? ',' : '';
-      const comment = value._comment ? ` # ${value._comment}` : '';
+      const comment = value != null && value._comment ? ` ${commentMarker} ${value._comment}` : '';
 
-      return `${stringifyExample(value, indent)}${comma}${comment}`;
+      return `${stringifyExample(value, indent, commentMarker)}${comma}${comment}`;
     });
 
     return `[\n${indent}${elements.join(`\n${indent}`)}\n${dent}]`;
   }
 
-  if (example.constructor === Object) {
+  if (isObject(example)) {
     const keys = Object.keys(example);
     const last = keys.length - 1;
     const elements = keys.map((key, index) => {
       const value = example[key];
       const comma = index !== last ? ',' : '';
-      const comment = example[key]._comment ? ` # ${example[key]._comment}` : '';
+      const comment = example[key]._comment ? ` ${commentMarker} ${example[key]._comment}` : '';
 
-      return `${JSON.stringify(key)}: ${stringifyExample(value, indent)}${comma}${comment}`;
+      return `${JSON.stringify(key)}: ${stringifyExample(value, indent, commentMarker)}${comma}${comment}`;
     });
 
     return `{\n${indent}${elements.join(`\n${indent}`)}\n${dent}}`;
   }
 
-  return JSON.stringify(example);
+  return JSON.stringify(example); // .replace(/"\$DUMMY\$"/g, '{ ... }');
 }
 
 function buildExample (name, method) {
@@ -154,7 +177,7 @@ function buildExample (name, method) {
 
   if (hasReqExample) {
     const params = getExample(method.params);
-    const req = JSON.stringify(Object.assign({}, rpcReqTemplate, { method: name, params })).replace(DUMMY, '{ ... }');
+    const req = JSON.stringify(Object.assign({}, rpcReqTemplate, { method: name, params })).replace(/"\$DUMMY\$"/g, '{ ... }');
 
     examples.push(`# Request\ncurl --data '${req}' -H "Content-Type: application/json" -X POST localhost:8545`);
   } else {
@@ -162,18 +185,38 @@ function buildExample (name, method) {
   }
 
   if (hasResExample) {
-    const res = stringifyExample(getExample(method.returns), '  ').replace(DUMMY, '{ ... }');
-    examples.push(`# Response\n{\n  "id": 1,\n  "jsonrpc": "2.0",\n  "result": ${res}\n}`);
+    const res = stringifyExample({
+      id: 1,
+      jsonrpc: '2.0',
+      result: getExample(method.returns)
+    });
+
+    examples.push(`# Response\n${res}`);
   } else {
-    warn(`${name} has a request example but not a response example`);
+    if (typeof method.returns === 'string') {
+      info(`${name} has a request example and only text description for response`);
+    } else {
+      warn(`${name} has a request example but not a response example`);
+    }
   }
 
-  return `\n\n#### example\n\n\`\`\`bash\n${examples.join('\n\n')}\n\`\`\``;
+  return `\n\n#### Example\n\n\`\`\`bash\n${examples.join('\n\n')}\n\`\`\``;
+}
+
+function buildParameters (params) {
+  let md = params.map(formatType).join('\n');
+
+  if (params.length > 0 && params.every(hasExample) && params[0].example !== DUMMY) {
+    const example = getExample(params);
+    md = `${md}\n\n\`\`\`js\nparams: ${stringifyExample(example, '', '//')}\n\`\`\``;
+  }
+
+  return md;
 }
 
 Object.keys(interfaces).sort().forEach((group) => {
   let preamble = `# The \`${group}\` Module`;
-  let markdown = `## JSON RPC methods\n`;
+  let markdown = `## JSON-RPC methods\n`;
 
   const spec = interfaces[group];
 
@@ -194,12 +237,12 @@ Object.keys(interfaces).sort().forEach((group) => {
     }
 
     const desc = method.desc;
-    const params = method.params.map(formatType).join('\n');
+    const params = buildParameters(method.params);
     const returns = formatType(method.returns);
     const example = buildExample(name, method);
 
     markdown = `${markdown}\n- [${name}](#${name.toLowerCase()})`;
-    content.push(`### ${name}\n\n${desc}\n\n#### parameters\n\n${params || 'none'}\n\n#### returns\n\n${returns || 'none'}${example}`);
+    content.push(`### ${name}\n\n${desc}\n\n#### Parameters\n\n${params || 'None'}\n\n#### Returns\n\n${returns || 'None'}${example}`);
   });
 
   markdown = `${markdown}\n\n## JSON RPC API Reference\n\n${content.join('\n\n***\n\n')}\n\n`;

@@ -15,7 +15,7 @@
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
 import { Address, BlockNumber, Data, Hash, Quantity } from '../types';
-import { withPreamble, withComment, DUMMY } from '../helpers';
+import { withPreamble, fromDecimal, withComment, DUMMY } from '../helpers';
 
 export default withPreamble(`
 
@@ -33,10 +33,10 @@ When requests are made that act on the state of Ethereum, the last parameter det
 
 The following options are possible for the \`defaultBlock\` parameter:
 
-- \`QUANTITY\`/\`INT\` - an integer block number;
-- \`STR "earliest"\` for the earliest/genesis block;
-- \`STR "latest"\` - for the latest mined block;
-- \`STR "pending"\` - for the pending state/transactions.
+- \`Quantity\`/\`Integer\` - an integer block number;
+- \`String "earliest"\` for the earliest/genesis block;
+- \`String "latest"\` - for the latest mined block;
+- \`String "pending"\` - for the pending state/transactions.
 
 `, {
   accounts: {
@@ -55,7 +55,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Quantity,
       desc: 'integer of the current block number the client is on.',
-      example: '0x4b7'
+      example: fromDecimal(1207)
     }
   },
 
@@ -88,7 +88,7 @@ The following options are possible for the \`defaultBlock\` parameter:
           },
           value: {
             type: Quantity,
-            desc: 'Integer of the value send with this transaction.',
+            desc: 'Integer of the value sent with this transaction.',
             optional: true
           },
           data: {
@@ -100,7 +100,7 @@ The following options are possible for the \`defaultBlock\` parameter:
         example: {
           from: '0x407d73d8a49eeb85d32cf465507dd71d507100c1',
           to: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-          value: '0x186a0'
+          value: fromDecimal(100000)
         }
       },
       {
@@ -113,7 +113,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Data,
       desc: 'the return value of executed contract.',
-      example: '0x5208'
+      example: fromDecimal(21000)
     }
   },
 
@@ -180,7 +180,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     params: [
       {
         type: Object,
-        desc: 'see [eth_sendTransaction](#eth_sendTransaction).',
+        desc: 'See [eth_call](#eth_call) parameters, expect that all properties are optional.',
         format: 'inputCallFormatter',
         example: DUMMY // will be replaced with { ... } by the generator
       }
@@ -189,7 +189,7 @@ The following options are possible for the \`defaultBlock\` parameter:
       type: Quantity,
       desc: 'The amount of gas used.',
       format: 'utils.toDecimal',
-      example: '0x5208'
+      example: fromDecimal(21000)
     }
   },
 
@@ -221,7 +221,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Quantity,
       desc: 'integer of the current gas price in wei.',
-      example: withComment('0x09184e72a000', '10000000000000')
+      example: fromDecimal(10000000000000)
     }
   },
 
@@ -236,7 +236,7 @@ The following options are possible for the \`defaultBlock\` parameter:
       },
       {
         type: BlockNumber,
-        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter)',
+        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
         format: 'inputDefaultBlockNumberFormatter',
         example: 'latest'
       }
@@ -344,7 +344,7 @@ The following options are possible for the \`defaultBlock\` parameter:
         }
       },
       example: {
-        number: withComment('0x1b4', 436),
+        number: fromDecimal(436),
         hash: '0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331',
         parentHash: '0x9646252be9520f6e71339a8df9c55e4d7619deeb018d2a3f2d21fc165dde5eb5',
         sealFields: ['0xe04d296d2460cfb8472af2c5fd05b5a214109c25688d3704aed5484f9a7792f2', '0x0000000000000042'],
@@ -353,14 +353,14 @@ The following options are possible for the \`defaultBlock\` parameter:
         transactionsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
         stateRoot: '0xd5855eb08b3387c0af375e9cdb6acfc05eb8f519e419b874b6ff2ffda7ed1dff',
         miner: '0x4e65fda2159562a496f9f3522f89122a3088497a',
-        difficulty: withComment('0x027f07', 163591),
-        totalDifficulty: withComment('0x027f07', 163591),
+        difficulty: fromDecimal(163591),
+        totalDifficulty: fromDecimal(163591),
         extraData: '0x0000000000000000000000000000000000000000000000000000000000000000',
-        size: withComment('0x027f07', 163591),
-        gasLimit: withComment('0x9f759', 653145),
-        minGasPrice: withComment('0x9f759', 653145),
-        gasUsed: withComment('0x9f759', 653145),
-        timestamp: withComment('0x54e34e8e', 1424182926),
+        size: fromDecimal(163591),
+        gasLimit: fromDecimal(653145),
+        minGasPrice: fromDecimal(653145),
+        gasUsed: fromDecimal(653145),
+        timestamp: fromDecimal(1424182926),
         transactions: [DUMMY, DUMMY], // will be replaced with [{ ... }, { ... }] by the generator
         uncles: ['0x1606e5...', '0xd5145a9...']
       }
@@ -372,8 +372,8 @@ The following options are possible for the \`defaultBlock\` parameter:
     params: [
       {
         type: BlockNumber,
-        desc: 'integer of a block number, or the string `\'earliest\'`, `\'latest\'` or `\'pending\'`, as in the [default block parameter](#the-default-block-parameter)',
-        example: '0x1b4'
+        desc: 'integer of a block number, or the string `\'earliest\'`, `\'latest\'` or `\'pending\'`, as in the [default block parameter](#the-default-block-parameter).',
+        example: fromDecimal(436)
       },
       {
         type: Boolean,
@@ -396,7 +396,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Quantity,
       desc: 'integer of the number of transactions in this block.',
-      example: '0xb'
+      example: fromDecimal(11)
     }
   },
 
@@ -405,14 +405,14 @@ The following options are possible for the \`defaultBlock\` parameter:
     params: [
       {
         type: BlockNumber,
-        desc: 'integer of a block number, or the string `\'earliest\'`, `\'latest\'` or `\'pending\'`, as in the [default block parameter](#the-default-block-parameter)',
-        example: '0xe8'
+        desc: 'integer of a block number, or the string `\'earliest\'`, `\'latest\'` or `\'pending\'`, as in the [default block parameter](#the-default-block-parameter).',
+        example: fromDecimal(232)
       }
     ],
     returns: {
       type: Quantity,
       desc: 'integer of the number of transactions in this block.',
-      example: '0xa'
+      example: fromDecimal(10)
     }
   },
 
@@ -427,9 +427,9 @@ The following options are possible for the \`defaultBlock\` parameter:
       },
       {
         type: BlockNumber,
-        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter)',
+        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
         format: 'inputDefaultBlockNumberFormatter',
-        example: '0x2'
+        example: fromDecimal(2)
       }
     ],
     returns: {
@@ -455,7 +455,7 @@ The following options are possible for the \`defaultBlock\` parameter:
       {
         type: Quantity,
         desc: 'The filter id.',
-        example: '0x16'
+        example: fromDecimal(22)
       }
     ],
     returns: {
@@ -463,11 +463,11 @@ The following options are possible for the \`defaultBlock\` parameter:
       desc: 'Array of log objects, or an empty array if nothing has changed since last poll.',
       example: [
         {
-          logIndex: '0x1', // 1
-          blockNumber: '0x1b4', // 436
+          logIndex: fromDecimal(1),
+          blockNumber: fromDecimal(436),
           blockHash: '0x8216c5785ac562ff41e2dcfdf5785ac562ff41e2dcfdf829c5a142f1fccd7d',
           transactionHash: '0xdf829c5a142f1fccd7d8216c5785ac562ff41e2dcfdf5785ac562ff41e2dcf',
-          transactionIndex: '0x0', // 0
+          transactionIndex: fromDecimal(0),
           address: '0x16c5785ac562ff41e2dcfdf829c5a142f1fccd7d',
           data: '0x0000000000000000000000000000000000000000000000000000000000000000',
           topics: ['0x59ebeb90bc63057b6515673c3ecf9438e5058bca0f92585014eced636878c9a5']
@@ -495,7 +495,7 @@ The following options are possible for the \`defaultBlock\` parameter:
       {
         type: Quantity,
         desc: 'The filter id.',
-        example: '0x16'
+        example: fromDecimal(22)
       }
     ],
     returns: 'See [eth_getFilterChanges](#eth_getfilterchanges)'
@@ -551,13 +551,13 @@ The following options are possible for the \`defaultBlock\` parameter:
         type: Quantity,
         desc: 'integer of the position in the storage.',
         format: 'utils.toHex',
-        example: '0x0'
+        example: fromDecimal(0)
       },
       {
         type: BlockNumber,
-        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter)',
+        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
         format: 'inputDefaultBlockNumberFormatter',
-        example: '0x2'
+        example: fromDecimal(2)
       }
     ],
     returns: {
@@ -628,14 +628,14 @@ The following options are possible for the \`defaultBlock\` parameter:
       },
       example: {
         hash: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b',
-        nonce: '0x0',
+        nonce: fromDecimal(0),
         blockHash: '0xbeab0aa2411b7ab17f30a99d3cb9c6ef2fc5426d6ad6fd9e2a26a6aed1d1055b',
-        blockNumber: '0x15df', // 5599
-        transactionIndex: '0x1', // 1
+        blockNumber: fromDecimal(5599),
+        transactionIndex: fromDecimal(1),
         from: '0x407d73d8a49eeb85d32cf465507dd71d507100c1',
         to: '0x85h43d8a49eeb85d32cf465507dd71d507100c1',
-        value: '0x7f110', // 520464
-        gas: '0x7f110', // 520464
+        value: fromDecimal(520464),
+        gas: fromDecimal(520464),
         gasPrice: '0x09184e72a000',
         input: '0x603880600c6000396000f300603880600c6000396000f3603880600c6000396000f360'
       }
@@ -653,7 +653,7 @@ The following options are possible for the \`defaultBlock\` parameter:
       {
         type: Quantity,
         desc: 'integer of the transaction index position.',
-        example: '0x0'
+        example: fromDecimal(0)
       }
     ],
     returns: 'See [eth_getBlockByHash](#eth_gettransactionbyhash)'
@@ -664,13 +664,13 @@ The following options are possible for the \`defaultBlock\` parameter:
     params: [
       {
         type: BlockNumber,
-        desc: 'a block number, or the string `\'earliest\'`, `\'latest\'` or `\'pending\'`, as in the [default block parameter](#the-default-block-parameter)',
-        example: '0x29c'
+        desc: 'a block number, or the string `\'earliest\'`, `\'latest\'` or `\'pending\'`, as in the [default block parameter](#the-default-block-parameter).',
+        example: fromDecimal(668)
       },
       {
         type: Quantity,
         desc: 'The transaction index position.',
-        example: '0x0'
+        example: fromDecimal(0)
       }
     ],
     returns: 'See [eth_getBlockByHash](#eth_gettransactionbyhash)'
@@ -686,7 +686,7 @@ The following options are possible for the \`defaultBlock\` parameter:
       },
       {
         type: BlockNumber,
-        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter)',
+        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
         format: 'inputDefaultBlockNumberFormatter',
         example: 'latest'
       }
@@ -695,12 +695,12 @@ The following options are possible for the \`defaultBlock\` parameter:
       type: Quantity,
       desc: 'integer of the number of transactions send from this address.',
       format: 'utils.toDecimal',
-      example: '0x1'
+      example: fromDecimal(1)
     }
   },
 
   getTransactionReceipt: {
-    desc: 'Returns the receipt of a transaction by transaction hash.\n\n**Note** That the receipt is not available for pending transactions.',
+    desc: 'Returns the receipt of a transaction by transaction hash.\n\n**Note** That the receipt is available even for pending transactions.',
     params: [
       {
         type: Hash,
@@ -748,11 +748,11 @@ The following options are possible for the \`defaultBlock\` parameter:
       },
       example: {
         transactionHash: '0xb903239f8543d04b5dc1ba6579132b143087c68db1b2168786408fcbce568238',
-        transactionIndex: withComment('0x1', 1),
-        blockNumber: withComment('0xb', 11),
+        transactionIndex: fromDecimal(1),
+        blockNumber: fromDecimal(11),
         blockHash: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b',
-        cumulativeGasUsed: withComment('0x33bc', 13244),
-        gasUsed: withComment('0x4dc', 1244),
+        cumulativeGasUsed: fromDecimal(13244),
+        gasUsed: fromDecimal(1244),
         contractAddress: withComment('0xb60e8dd61c5d32be8058bb8eb970870f07233155', 'or null, if none was created'),
         logs: withComment(
           [DUMMY, DUMMY], // will be replaced with [{ ... }, { ... }] by the generator
@@ -767,13 +767,13 @@ The following options are possible for the \`defaultBlock\` parameter:
     params: [
       {
         type: Hash,
-        desc: 'Hash a block.',
+        desc: 'Hash of a block.',
         example: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b'
       },
       {
         type: Quantity,
-        desc: 'The uncle\'s index position',
-        example: '0x0'
+        desc: 'The uncle\'s index position.',
+        example: fromDecimal(0)
       }
     ],
     returns: 'See [eth_getBlockByHash](#eth_getblockbyhash)'
@@ -784,13 +784,13 @@ The following options are possible for the \`defaultBlock\` parameter:
     params: [
       {
         type: BlockNumber,
-        desc: 'a block number, or the string `\'earliest\'`, `\'latest\'` or `\'pending\'`, as in the [default block parameter](#the-default-block-parameter)',
-        example: '0x29c'
+        desc: 'a block number, or the string `\'earliest\'`, `\'latest\'` or `\'pending\'`, as in the [default block parameter](#the-default-block-parameter).',
+        example: fromDecimal(668)
       },
       {
         type: Quantity,
-        desc: 'The uncle\'s index position',
-        example: '0x0'
+        desc: 'The uncle\'s index position.',
+        example: fromDecimal(0)
       }
     ],
     returns: 'See [eth_getBlockByHash](#eth_getblockbyhash)'
@@ -808,7 +808,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Quantity,
       desc: 'integer of the number of uncles in this block.',
-      example: '0x1'
+      example: fromDecimal(0)
     }
   },
 
@@ -817,14 +817,14 @@ The following options are possible for the \`defaultBlock\` parameter:
     params: [
       {
         type: BlockNumber,
-        desc: 'integer of a block number, or the string \'latest\', \'earliest\' or \'pending\', see the [default block parameter](#the-default-block-parameter)',
-        example: '0xe8'
+        desc: 'integer of a block number, or the string \'latest\', \'earliest\' or \'pending\', see the [default block parameter](#the-default-block-parameter).',
+        example: fromDecimal(232)
       }
     ],
     returns: {
       type: Quantity,
       desc: 'integer of the number of uncles in this block.',
-      example: '0x1'
+      example: fromDecimal(1)
     }
   },
 
@@ -838,7 +838,7 @@ The following options are possible for the \`defaultBlock\` parameter:
         '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
         '0x5EED00000000000000000000000000005EED0000000000000000000000000000',
         '0xd1ff1c01710000000000000000000000d1ff1c01710000000000000000000000',
-        '0x1'
+        fromDecimal(1)
       ]
     }
   },
@@ -849,7 +849,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Quantity,
       desc: 'number of hashes per second.',
-      example: '0x38a'
+      example: fromDecimal(906)
     }
   },
 
@@ -881,12 +881,21 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Quantity,
       desc: 'A filter id.',
-      example: '0x1'
+      example: fromDecimal(1)
     }
   },
 
   newFilter: {
-    desc: 'Creates a filter object, based on filter options, to notify when the state changes (logs).\nTo check if the state has changed, call [eth_getFilterChanges](#eth_getfilterchanges).',
+    desc: `Creates a filter object, based on filter options, to notify when the state changes (logs).
+           To check if the state has changed, call [eth_getFilterChanges](#eth_getfilterchanges).
+
+           ##### A note on specifying topic filters:
+           Topics are order-dependent. A transaction with a log with topics [A, B] will be matched by the following topic filters:
+           * \`[]\` "anything"
+           * \`[A]\` "A in first position (and anything after)"
+           * \`[null, B]\` "anything in first position AND B in second position (and anything after)"
+           * \`[A, B]\` "A in first position AND B in second position (and anything after)"
+           * \`[[A, B], [A, B]]\` "(A OR B) in first position AND (A OR B) in second position (and anything after)"`.replace(/^[^\S\n]+/gm, ''),
     params: [{
       type: Object,
       desc: 'The filter options:',
@@ -910,7 +919,7 @@ The following options are possible for the \`defaultBlock\` parameter:
         },
         topics: {
           type: Array,
-          desc: 'Array of 32 Bytes `DATA` topics. Topics are order-dependent. Each topic can also be an array of DATA with \'or\' options.',
+          desc: 'Array of 32 Bytes `Data` topics. Topics are order-dependent. Each topic can also be an array of DATA with \'or\' options.',
           optional: true
         },
         limit: {
@@ -920,8 +929,8 @@ The following options are possible for the \`defaultBlock\` parameter:
         }
       },
       example: {
-        fromBlock: '0x1',
-        toBlock: '0x2',
+        fromBlock: fromDecimal(1),
+        toBlock: fromDecimal(2),
         address: '0x8888f1f195afa192cfee860698584c030f4c9db1',
         topics: ['0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b', null, ['0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b', '0x000000000000000000000000aff3454fce5edbc8cca8697c15331677e6ebccc']]
       }
@@ -929,7 +938,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Quantity,
       desc: 'The filter id.',
-      example: '0x1'
+      example: fromDecimal(1)
     }
   },
 
@@ -951,7 +960,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Quantity,
       desc: 'A filter id.',
-      example: '0x1'
+      example: fromDecimal(1)
     }
   },
 
@@ -983,7 +992,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: String,
       desc: 'The current ethereum protocol version.',
-      example: '0x63'
+      example: fromDecimal(99)
     }
   },
 
@@ -1000,7 +1009,7 @@ The following options are possible for the \`defaultBlock\` parameter:
   },
 
   sendRawTransaction: {
-    desc: 'Creates new message call transaction or a contract creation for signed transactions.\n\n**Note:** `eth_submitTransaction` is an alternative alias of this method.',
+    desc: 'Creates new message call transaction or a contract creation for signed transactions.\n\n**Note:** `eth_submitTransaction` is an alias of this method.',
     params: [
       {
         type: Data,
@@ -1025,11 +1034,11 @@ The following options are possible for the \`defaultBlock\` parameter:
         details: {
           from: {
             type: Address,
-            desc: '20 Bytes - The address the transaction is send from'
+            desc: '20 Bytes - The address the transaction is send from.'
           },
           to: {
             type: Address,
-            desc: '20 Bytes - (optional when creating new contract) The address the transaction is directed to'
+            desc: '20 Bytes - (optional when creating new contract) The address the transaction is directed to.'
           },
           gas: {
             type: Quantity,
@@ -1045,7 +1054,7 @@ The following options are possible for the \`defaultBlock\` parameter:
           },
           value: {
             type: Quantity,
-            desc: 'Integer of the value send with this transaction.',
+            desc: 'Integer of the value sent with this transaction.',
             optional: true
           },
           data: {
@@ -1061,9 +1070,9 @@ The following options are possible for the \`defaultBlock\` parameter:
         example: {
           from: '0xb60e8dd61c5d32be8058bb8eb970870f07233155',
           to: '0xd46e8dd67c5d32be8058bb8eb970870f072445675',
-          gas: '0x76c0', // 30400,
-          gasPrice: '0x9184e72a000', // 10000000000000
-          value: '0x9184e72a', // 2441406250
+          gas: fromDecimal(30400),
+          gasPrice: fromDecimal(10000000000000),
+          value: fromDecimal(2441406250),
           data: '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675'
         }
       }
@@ -1170,14 +1179,14 @@ The following options are possible for the \`defaultBlock\` parameter:
         raw: '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675',
         tx: {
           hash: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b',
-          nonce: '0x0',
+          nonce: fromDecimal(0),
           blockHash: '0xbeab0aa2411b7ab17f30a99d3cb9c6ef2fc5426d6ad6fd9e2a26a6aed1d1055b',
-          blockNumber: '0x15df', // 5599
-          transactionIndex: '0x1', // 1
+          blockNumber: fromDecimal(5599),
+          transactionIndex: fromDecimal(1),
           from: '0x407d73d8a49eeb85d32cf465507dd71d507100c1',
           to: '0x85h43d8a49eeb85d32cf465507dd71d507100c1',
-          value: '0x7f110', // 520464
-          gas: '0x7f110', // 520464
+          value: fromDecimal(520464),
+          gas: fromDecimal(520464),
           gasPrice: '0x09184e72a000',
           input: '0x603880600c6000396000f300603880600c6000396000f3603880600c6000396000f360'
         }
@@ -1266,9 +1275,9 @@ The following options are possible for the \`defaultBlock\` parameter:
         }
       },
       example: {
-        startingBlock: '0x384',
-        currentBlock: '0x386',
-        highestBlock: '0x454'
+        startingBlock: fromDecimal(900),
+        currentBlock: fromDecimal(902),
+        highestBlock: fromDecimal(1108)
       }
     }
   },
@@ -1279,7 +1288,7 @@ The following options are possible for the \`defaultBlock\` parameter:
       {
         type: Quantity,
         desc: 'The filter id.',
-        example: '0xb'
+        example: fromDecimal(11)
       }
     ],
     returns: {
