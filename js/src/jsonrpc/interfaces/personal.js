@@ -124,7 +124,7 @@ export default {
       {
         type: Quantity,
         default: 300,
-        desc: 'Integer or null - Duration in seconds how long the account should remain unlocked for.',
+        desc: 'Integer or `null` - Duration in seconds how long the account should remain unlocked for.',
         example: null
       }
     ],

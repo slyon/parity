@@ -15,6 +15,7 @@
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
 import { Quantity } from '../types';
+import { fromDecimal } from '../helpers';
 
 export default {
   listening: {
@@ -34,7 +35,7 @@ export default {
       type: Quantity,
       desc: 'Integer of the number of connected peers',
       format: 'utils.toDecimal',
-      example: '0x2'
+      example: fromDecimal(2)
     }
   },
 

@@ -923,7 +923,7 @@ The following options are possible for the \`defaultBlock\` parameter:
           optional: true
         },
         limit: {
-          type: Number,
+          type: Quantity,
           desc: 'The maximum number of entries to retrieve (latest first).',
           optional: true
         }
@@ -1278,11 +1278,11 @@ The following options are possible for the \`defaultBlock\` parameter:
           desc: 'Total amount of snapshot chunks processed'
         }
       },
-      example: {
+      example: withComment({
         startingBlock: fromDecimal(900),
         currentBlock: fromDecimal(902),
         highestBlock: fromDecimal(1108)
-      }
+      }, 'Or `false` when not syncing')
     }
   },
 

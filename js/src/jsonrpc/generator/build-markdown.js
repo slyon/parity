@@ -19,6 +19,7 @@ import path from 'path';
 import chalk from 'chalk';
 
 import { DUMMY } from '../helpers';
+import { BlockNumber } from '../types';
 import interfaces from '../';
 
 const ROOT_DIR = path.join(__dirname, '../docs');
@@ -32,17 +33,24 @@ function info (log) { console.log(chalk.blue(`INFO:\t${log}`)); }
 function warn (log) { console.warn(chalk.yellow(`WARN:\t${log}`)); }
 function error (log) { console.error(chalk.red(`ERROR:\t${log}`)); }
 
+const type2print = new WeakMap();
+type2print.set(BlockNumber, 'Quantity|Tag');
+
+function printType (type) {
+  return type2print.get(type) || type.name;
+}
+
 function formatDescription (obj, prefix = '', indent = '') {
   const optional = obj.optional ? '(optional) ' : '';
   const defaults = obj.default ? `(default: \`${obj.default}\`) ` : '';
 
-  return `${indent}- ${prefix}\`${obj.type.name}\` - ${optional}${defaults}${obj.desc}`;
+  return `${indent}${prefix}\`${printType(obj.type)}\` - ${optional}${defaults}${obj.desc}`;
 }
 
 function formatType (obj) {
   if (obj.type === Object && obj.details) {
     const sub = Object.keys(obj.details).map((key) => {
-      return formatDescription(obj.details[key], `\`${key}\`: `, '    ');
+      return formatDescription(obj.details[key], `\`${key}\`: `, '    - ');
     }).join('\n');
 
     return `${formatDescription(obj)}\n${sub}`;
@@ -127,8 +135,8 @@ function stringifyExample (example, dent = '') {
       return `[${dummies.join(', ')}]`;
     }
 
-    // For arrays containing just one object, don't unwind the array to multiline
-    if (last === 0 && isObject(example[0])) {
+    // For arrays containing just one object or string, don't unwind the array to multiline
+    if (last === 0 && (isObject(example[0]) || typeof example[0] === 'string')) {
       return `[${stringifyExample(example[0], dent)}]`;
     }
 
@@ -211,7 +219,11 @@ function buildExample (name, method) {
 }
 
 function buildParameters (params) {
-  let md = params.map(formatType).join('\n');
+  if (params.length === 0) {
+    return '';
+  }
+
+  let md = `0. ${params.map(formatType).join('\n0. ')}`;
 
   if (params.length > 0 && params.every(hasExample) && params[0].example !== DUMMY) {
     const example = getExample(params);
@@ -245,7 +257,7 @@ Object.keys(interfaces).sort().forEach((group) => {
 
     const desc = method.desc;
     const params = buildParameters(method.params);
-    const returns = formatType(method.returns);
+    const returns = `- ${formatType(method.returns)}`;
     const example = buildExample(name, method);
 
     markdown = `${markdown}\n- [${name}](#${name.toLowerCase()})`;
