@@ -109,7 +109,7 @@ function getExample (obj) {
   return example;
 }
 
-function stringifyExample (example, dent = '', commentMarker = '#') {
+function stringifyExample (example, dent = '') {
   const indent = `${dent}  `;
 
   if (example === DUMMY) {
@@ -119,7 +119,8 @@ function stringifyExample (example, dent = '', commentMarker = '#') {
   if (isArray(example)) {
     const last = example.length - 1;
 
-    // If all elements are dummies, print out a single line
+    // If all elements are dummies, print out a single line.
+    // Also covers empty arrays.
     if (example.every(isDummy)) {
       const dummies = example.map(_ => '{ ... }');
 
@@ -128,14 +129,14 @@ function stringifyExample (example, dent = '', commentMarker = '#') {
 
     // For arrays containing just one object, don't unwind the array to multiline
     if (last === 0 && isObject(example[0])) {
-      return `[${stringifyExample(example[0], dent, commentMarker)}]`;
+      return `[${stringifyExample(example[0], dent)}]`;
     }
 
     const elements = example.map((value, index) => {
       const comma = index !== last ? ',' : '';
-      const comment = value != null && value._comment ? ` ${commentMarker} ${value._comment}` : '';
+      const comment = value != null && value._comment ? ` // ${value._comment}` : '';
 
-      return `${stringifyExample(value, indent, commentMarker)}${comma}${comment}`;
+      return `${stringifyExample(value, indent)}${comma}${comment}`;
     });
 
     return `[\n${indent}${elements.join(`\n${indent}`)}\n${dent}]`;
@@ -144,12 +145,18 @@ function stringifyExample (example, dent = '', commentMarker = '#') {
   if (isObject(example)) {
     const keys = Object.keys(example);
     const last = keys.length - 1;
+
+    // print out an empty object
+    if (last === -1) {
+      return '{}';
+    }
+
     const elements = keys.map((key, index) => {
       const value = example[key];
       const comma = index !== last ? ',' : '';
-      const comment = example[key]._comment ? ` ${commentMarker} ${example[key]._comment}` : '';
+      const comment = example[key]._comment ? ` // ${example[key]._comment}` : '';
 
-      return `${JSON.stringify(key)}: ${stringifyExample(value, indent, commentMarker)}${comma}${comment}`;
+      return `${JSON.stringify(key)}: ${stringifyExample(value, indent)}${comma}${comment}`;
     });
 
     return `{\n${indent}${elements.join(`\n${indent}`)}\n${dent}}`;
@@ -179,7 +186,7 @@ function buildExample (name, method) {
     const params = getExample(method.params);
     const req = JSON.stringify(Object.assign({}, rpcReqTemplate, { method: name, params })).replace(/"\$DUMMY\$"/g, '{ ... }');
 
-    examples.push(`# Request\ncurl --data '${req}' -H "Content-Type: application/json" -X POST localhost:8545`);
+    examples.push(`Request\n\`\`\`bash\ncurl --data '${req}' -H "Content-Type: application/json" -X POST localhost:8545\n\`\`\``);
   } else {
     warn(`${name} has a response example but not a request example`);
   }
@@ -191,7 +198,7 @@ function buildExample (name, method) {
       result: getExample(method.returns)
     });
 
-    examples.push(`# Response\n${res}`);
+    examples.push(`Response\n\`\`\`js\n${res}\n\`\`\``);
   } else {
     if (typeof method.returns === 'string') {
       info(`${name} has a request example and only text description for response`);
@@ -200,7 +207,7 @@ function buildExample (name, method) {
     }
   }
 
-  return `\n\n#### Example\n\n\`\`\`bash\n${examples.join('\n\n')}\n\`\`\``;
+  return `\n\n#### Example\n\n${examples.join('\n\n')}`;
 }
 
 function buildParameters (params) {
@@ -208,7 +215,7 @@ function buildParameters (params) {
 
   if (params.length > 0 && params.every(hasExample) && params[0].example !== DUMMY) {
     const example = getExample(params);
-    md = `${md}\n\n\`\`\`js\nparams: ${stringifyExample(example, '', '//')}\n\`\`\``;
+    md = `${md}\n\n\`\`\`js\nparams: ${stringifyExample(example)}\n\`\`\``;
   }
 
   return md;
@@ -245,7 +252,7 @@ Object.keys(interfaces).sort().forEach((group) => {
     content.push(`### ${name}\n\n${desc}\n\n#### Parameters\n\n${params || 'None'}\n\n#### Returns\n\n${returns || 'None'}${example}`);
   });
 
-  markdown = `${markdown}\n\n## JSON RPC API Reference\n\n${content.join('\n\n***\n\n')}\n\n`;
+  markdown = `${markdown}\n\n## JSON-RPC API Reference\n\n${content.join('\n\n***\n\n')}\n\n`;
 
   const mdFile = path.join(ROOT_DIR, `${group}.md`);
 

@@ -113,7 +113,7 @@ The following options are possible for the \`defaultBlock\` parameter:
     returns: {
       type: Data,
       desc: 'the return value of executed contract.',
-      example: fromDecimal(21000)
+      example: '0x'
     }
   },
 
@@ -919,7 +919,7 @@ The following options are possible for the \`defaultBlock\` parameter:
         },
         topics: {
           type: Array,
-          desc: 'Array of 32 Bytes `Data` topics. Topics are order-dependent. Each topic can also be an array of DATA with \'or\' options.',
+          desc: 'Array of 32 Bytes `Data` topics. Topics are order-dependent. It\'s possible to pass in `null` to match any topic, or a subarray of multiple topics of which one should be matching.',
           optional: true
         },
         limit: {
@@ -932,7 +932,11 @@ The following options are possible for the \`defaultBlock\` parameter:
         fromBlock: fromDecimal(1),
         toBlock: fromDecimal(2),
         address: '0x8888f1f195afa192cfee860698584c030f4c9db1',
-        topics: ['0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b', null, ['0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b', '0x000000000000000000000000aff3454fce5edbc8cca8697c15331677e6ebccc']]
+        topics: withComment([
+          withComment('0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'This topic in first position'),
+          withComment(null, 'Any topic in second position'),
+          withComment(['0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b', '0x000000000000000000000000aff3454fce5edbc8cca8697c15331677e6ebccc'], 'Either topic of the two in third position')
+        ], '... and anything after')
       }
     }],
     returns: {
@@ -1096,7 +1100,7 @@ The following options are possible for the \`defaultBlock\` parameter:
       {
         type: Data,
         desc: 'Transaction hash to sign.',
-        example: 'Schoolbus'
+        example: withComment('0x5363686f6f6c627573', 'Schoolbus')
       }
     ],
     returns: {

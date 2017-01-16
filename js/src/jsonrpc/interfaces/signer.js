@@ -15,6 +15,7 @@
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
 import { Quantity, Data, BlockNumber } from '../types';
+import { fromDecimal } from '../helpers';
 
 export default {
   generateAuthorizationToken: {
@@ -54,7 +55,7 @@ export default {
       {
         type: Quantity,
         desc: 'The request id.',
-        example: '0x1'
+        example: fromDecimal(1)
       },
       {
         type: Object,
@@ -97,7 +98,7 @@ export default {
       {
         type: Quantity,
         desc: 'Integer - The request id',
-        example: '0x1'
+        example: fromDecimal(1)
       },
       {
         type: Data,
@@ -118,7 +119,7 @@ export default {
       {
         type: Quantity,
         desc: 'Integer - The request id',
-        example: '0x1'
+        example: fromDecimal(1)
       }
     ],
     returns: {

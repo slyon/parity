@@ -15,6 +15,7 @@
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
 import { Data } from '../types';
+import { withComment } from '../helpers';
 
 export default {
   clientVersion: {
@@ -33,7 +34,7 @@ export default {
       {
         type: String,
         desc: 'The data to convert into a SHA3 hash.',
-        example: '0x68656c6c6f20776f726c64'
+        example: withComment('0x68656c6c6f20776f726c64', '"hello world"')
       }
     ],
     returns: {
