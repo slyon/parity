@@ -14,21 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
-import { handleActions } from 'redux-actions';
+use jsonrpc_core;
 
-const initialState = {
-  worker: undefined,
-  error: null
-};
+/// RPC methods metadata.
+#[derive(Clone, Default, Debug, PartialEq)]
+pub struct Metadata {
+	/// Current dapplication identifier
+	pub dapp_id: Option<String>,
+	/// Request origin
+	pub origin: Origin,
+}
 
-export default handleActions({
-  setWorker (state, action) {
-    const { worker } = action;
-    return Object.assign({}, state, { worker });
-  },
+/// RPC request origin
+#[derive(Clone, Debug, PartialEq)]
+pub enum Origin {
+	/// RPC server
+	Rpc,
+	/// Dapps server
+	Dapps,
+	/// IPC server
+	Ipc,
+	/// Signer
+	Signer,
+	/// Unknown
+	Unknown,
+}
 
-  setError (state, action) {
-    const { error } = action;
-    return Object.assign({}, state, { error });
-  }
-}, initialState);
+impl Default for Origin {
+	fn default() -> Self {
+		Origin::Unknown
+	}
+}
+
+impl jsonrpc_core::Metadata for Metadata {}
+

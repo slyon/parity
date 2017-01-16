@@ -15,8 +15,8 @@
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
-import { observable, action } from 'mobx';
-import { flatMap } from 'lodash';
+import { observable, action, transaction } from 'mobx';
+import { flatMap, uniqBy } from 'lodash';
 import { FormattedMessage } from 'react-intl';
 
 import Contracts from '~/contracts';
@@ -26,11 +26,53 @@ const ZERO = /^(0x)?0*$/;
 
 export default class AddressSelectStore {
 
+  @observable loading = false;
   @observable values = [];
   @observable registryValues = [];
 
   initValues = [];
-  regLookups = [];
+  regLookups = [
+    (query) => {
+      query = query.toLowerCase().trim();
+      if (query.length === 0 || query === '0x') {
+        return null;
+      }
+      const startsWithQuery = (s) => new RegExp('^' + query, 'i').test(s);
+
+      let address;
+      let name = this.reverse[query];
+
+      if (!name) {
+        const addr = Object
+          .keys(this.reverse)
+          .find((addr) => {
+            const name = this.reverse[addr];
+            return startsWithQuery(addr) || (name && startsWithQuery(name));
+          });
+
+        if (addr) {
+          address = addr;
+          name = this.reverse[addr];
+        } else {
+          return null;
+        }
+      }
+
+      return {
+        address,
+        name,
+        description: (
+          <FormattedMessage
+            id='addressSelect.fromRegistry'
+            defaultMessage='{name} (from registry)'
+            values={ {
+              name
+            } }
+          />
+        )
+      };
+    }
+  ];
 
   constructor (api) {
     this.api = api;
@@ -44,7 +86,7 @@ export default class AddressSelectStore {
           return emailVerification
             .instance
             .reverse
-            .call({}, [ sha3(email) ])
+            .call({}, [ sha3.text(email) ])
             .then((address) => {
               return {
                 address,
@@ -68,7 +110,7 @@ export default class AddressSelectStore {
         this.regLookups.push((name) => {
           return registryInstance
             .getAddress
-            .call({}, [ sha3(name), 'A' ])
+            .call({}, [ sha3.text(name), 'A' ])
             .then((address) => {
               return {
                 address,
@@ -114,7 +156,8 @@ export default class AddressSelectStore {
   }
 
   @action setValues (props) {
-    const { accounts = {}, contracts = {}, contacts = {} } = props;
+    const { accounts = {}, contracts = {}, contacts = {}, reverse = {} } = props;
+    this.reverse = reverse;
 
     const accountsN = Object.keys(accounts).length;
     const contractsN = Object.keys(contracts).length;
@@ -182,19 +225,28 @@ export default class AddressSelectStore {
         };
       });
 
-    // Registries Lookup
-    this.registryValues = [];
+    // Clear the previous results after 50ms
+    // if still fetching
+    const timeoutId = setTimeout(() => {
+      transaction(() => {
+        this.registryValues = [];
+        this.loading = true;
+      });
+    }, 50);
 
     const lookups = this.regLookups.map((regLookup) => regLookup(value));
 
-    Promise
+    // Registries Lookup
+    return Promise
       .all(lookups)
       .then((results) => {
         return results
           .filter((result) => result && !ZERO.test(result.address));
       })
       .then((results) => {
-        this.registryValues = results
+        clearTimeout(timeoutId);
+
+        const registryValues = uniqBy(results, (result) => result.address)
           .map((result) => {
             const lowercaseAddress = result.address.toLowerCase();
 
@@ -209,6 +261,11 @@ export default class AddressSelectStore {
 
             return result;
           });
+
+        transaction(() => {
+          this.loading = false;
+          this.registryValues = registryValues;
+        });
       });
   }
 

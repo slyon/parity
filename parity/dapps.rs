@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
+use std::path::PathBuf;
 use std::sync::Arc;
 use io::PanicHandler;
 use rpc_apis;
@@ -21,9 +22,9 @@ use ethcore::client::Client;
 use ethsync::SyncProvider;
 use helpers::replace_home;
 use dir::default_data_path;
+use jsonrpc_core::reactor::Remote;
 use rpc_apis::SignerService;
 use hash_fetch::fetch::Client as FetchClient;
-use parity_reactor::Remote;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Configuration {
@@ -33,7 +34,8 @@ pub struct Configuration {
 	pub hosts: Option<Vec<String>>,
 	pub user: Option<String>,
 	pub pass: Option<String>,
-	pub dapps_path: String,
+	pub dapps_path: PathBuf,
+	pub extra_dapps: Vec<PathBuf>,
 }
 
 impl Default for Configuration {
@@ -46,7 +48,8 @@ impl Default for Configuration {
 			hosts: Some(Vec::new()),
 			user: None,
 			pass: None,
-			dapps_path: replace_home(&data_dir, "$BASE/dapps"),
+			dapps_path: replace_home(&data_dir, "$BASE/dapps").into(),
+			extra_dapps: vec![],
 		}
 	}
 }
@@ -80,7 +83,14 @@ pub fn new(configuration: Configuration, deps: Dependencies) -> Result<Option<We
 		(username.to_owned(), password)
 	});
 
-	Ok(Some(setup_dapps_server(deps, configuration.dapps_path, &addr, configuration.hosts, auth)?))
+	Ok(Some(setup_dapps_server(
+		deps,
+		configuration.dapps_path,
+		configuration.extra_dapps,
+		&addr,
+		configuration.hosts,
+		auth
+	)?))
 }
 
 pub use self::server::WebappServer;
@@ -90,11 +100,13 @@ pub use self::server::setup_dapps_server;
 mod server {
 	use super::Dependencies;
 	use std::net::SocketAddr;
+	use std::path::PathBuf;
 
 	pub struct WebappServer;
 	pub fn setup_dapps_server(
 		_deps: Dependencies,
-		_dapps_path: String,
+		_dapps_path: PathBuf,
+		_extra_dapps: Vec<PathBuf>,
 		_url: &SocketAddr,
 		_allowed_hosts: Option<Vec<String>>,
 		_auth: Option<(String, String)>,
@@ -106,6 +118,7 @@ mod server {
 #[cfg(feature = "dapps")]
 mod server {
 	use super::Dependencies;
+	use std::path::PathBuf;
 	use std::sync::Arc;
 	use std::net::SocketAddr;
 	use std::io;
@@ -117,12 +130,15 @@ mod server {
 	use rpc_apis;
 	use ethcore_rpc::is_major_importing;
 	use hash_fetch::urlhint::ContractClient;
+	use jsonrpc_core::reactor::RpcHandler;
+	use parity_reactor;
 
 	pub use ethcore_dapps::Server as WebappServer;
 
 	pub fn setup_dapps_server(
 		deps: Dependencies,
-		dapps_path: String,
+		dapps_path: PathBuf,
+		extra_dapps: Vec<PathBuf>,
 		url: &SocketAddr,
 		allowed_hosts: Option<Vec<String>>,
 		auth: Option<(String, String)>,
@@ -130,10 +146,11 @@ mod server {
 		use ethcore_dapps as dapps;
 
 		let server = dapps::ServerBuilder::new(
-			dapps_path,
+			&dapps_path,
 			Arc::new(Registrar { client: deps.client.clone() }),
-			deps.remote.clone(),
+			parity_reactor::Remote::new(deps.remote.clone()),
 		);
+
 		let sync = deps.sync.clone();
 		let client = deps.client.clone();
 		let signer = deps.signer.clone();
@@ -141,15 +158,18 @@ mod server {
 			.fetch(deps.fetch.clone())
 			.sync_status(Arc::new(move || is_major_importing(Some(sync.status().state), client.queue_info())))
 			.web_proxy_tokens(Arc::new(move |token| signer.is_valid_web_proxy_access_token(&token)))
-			.signer_address(deps.signer.address());
+			.extra_dapps(&extra_dapps)
+			.signer_address(deps.signer.address())
+			.allowed_hosts(allowed_hosts);
 
-		let server = rpc_apis::setup_rpc(server, deps.apis.clone(), rpc_apis::ApiSet::UnsafeContext);
+		let apis = rpc_apis::setup_rpc(Default::default(), deps.apis.clone(), rpc_apis::ApiSet::UnsafeContext);
+		let handler = RpcHandler::new(Arc::new(apis), deps.remote);
 		let start_result = match auth {
 			None => {
-				server.start_unsecured_http(url, allowed_hosts)
+				server.start_unsecured_http(url, handler)
 			},
 			Some((username, password)) => {
-				server.start_basic_auth_http(url, allowed_hosts, &username, &password)
+				server.start_basic_auth_http(url, &username, &password, handler)
 			},
 		};
 
@@ -160,8 +180,9 @@ mod server {
 			},
 			Err(e) => Err(format!("WebApps error: {:?}", e)),
 			Ok(server) => {
+				let ph = deps.panic_handler;
 				server.set_panic_handler(move || {
-					deps.panic_handler.notify_all("Panic in WebApp thread.".to_owned());
+					ph.notify_all("Panic in WebApp thread.".to_owned());
 				});
 				Ok(server)
 			},

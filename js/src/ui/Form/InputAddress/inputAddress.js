@@ -16,7 +16,6 @@
 
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 
 import util from '~/api/util';
 import { nodeOrStringProptype } from '~/util/proptypes';
@@ -58,7 +57,7 @@ class InputAddress extends Component {
 
   render () {
     const { accountsInfo, allowCopy, className, disabled, error, focused, hint } = this.props;
-    const { hideUnderline, label, onClick, onFocus, onSubmit, readOnly, small } = this.props;
+    const { hideUnderline, label, onClick, onFocus, readOnly, small } = this.props;
     const { tabIndex, text, tokens, value } = this.props;
 
     const account = value && (accountsInfo[value] || tokens[value]);
@@ -75,6 +74,12 @@ class InputAddress extends Component {
       containerClasses.push(styles.small);
     }
 
+    const props = {};
+
+    if (!disabled) {
+      props.focused = focused;
+    }
+
     return (
       <div className={ containerClasses.join(' ') }>
         <Input
@@ -82,21 +87,22 @@ class InputAddress extends Component {
           className={ classes.join(' ') }
           disabled={ disabled }
           error={ error }
-          focused={ focused }
           hideUnderline={ hideUnderline }
           hint={ hint }
           label={ label }
-          onChange={ this.handleInputChange }
+          onChange={ this.onChange }
           onClick={ onClick }
           onFocus={ onFocus }
-          onSubmit={ onSubmit }
+          onSubmit={ this.onSubmit }
           readOnly={ readOnly }
           tabIndex={ tabIndex }
           value={
             text && account
               ? account.name
               : (nullName || value)
-          } />
+          }
+          { ...props }
+        />
         { icon }
       </div>
     );
@@ -126,22 +132,34 @@ class InputAddress extends Component {
     return (
       <div className={ classes.join(' ') }>
         <IdentityIcon
-          inline center
-          address={ value } />
+          address={ value }
+          center
+          inline />
       </div>
     );
   }
 
-  handleInputChange = (event, value) => {
-    const isEmpty = (value.length === 0);
+  onChange = (event, _value) => {
+    let address = _value.trim();
+    const isEmpty = (address.length === 0);
 
     this.setState({ isEmpty });
 
-    if (!/^0x/.test(value) && util.isAddressValid(`0x${value}`)) {
-      return this.props.onChange(event, `0x${value}`);
-    }
+    if (this.props.onChange) {
+      if (!/^0x/.test(address) && util.isAddressValid(`0x${address}`)) {
+        address = `0x${address}`;
+      }
 
-    this.props.onChange(event, value);
+      this.props.onChange(event, address);
+    }
+  }
+
+  onSubmit = (_value) => {
+    const address = _value.trim();
+
+    if (this.props.onSubmit) {
+      this.props.onSubmit(address);
+    }
   }
 }
 
@@ -155,11 +173,7 @@ function mapStateToProps (state) {
   };
 }
 
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({}, dispatch);
-}
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  null
 )(InputAddress);

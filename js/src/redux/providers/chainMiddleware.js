@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
+import BalancesProvider from './balances';
 import { showSnackbar } from './snackbarActions';
+import { DEFAULT_NETCHAIN } from './statusReducer';
 
 export default class ChainMiddleware {
   toMiddleware () {
@@ -23,11 +25,16 @@ export default class ChainMiddleware {
         const { collection } = action;
 
         if (collection && collection.netChain) {
-          const chain = collection.netChain;
+          const newChain = collection.netChain;
           const { nodeStatus } = store.getState();
 
-          if (chain !== nodeStatus.netChain) {
-            store.dispatch(showSnackbar(`Switched to ${chain}. Please reload the page.`, 5000));
+          if (newChain !== nodeStatus.netChain && nodeStatus.netChain !== DEFAULT_NETCHAIN) {
+            store.dispatch(showSnackbar(`Switched to ${newChain}. Please reload the page.`, 60000));
+
+            // Fetch the new balances without notifying the user of any change
+            BalancesProvider.get(store).fetchAllBalances({
+              changedNetwork: true
+            });
           }
         }
       }

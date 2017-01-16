@@ -391,6 +391,10 @@ class DeployContract extends Component {
       .then(([gasEst, gas]) => {
         this.gasStore.setEstimated(gasEst.toFixed(0));
         this.gasStore.setGas(gas.toFixed(0));
+      })
+      .catch((error) => {
+        this.gasStore.setEstimatedError();
+        console.warn('estimateGas', error);
       });
   }
 
@@ -441,9 +445,7 @@ class DeployContract extends Component {
   }
 
   onCodeChange = (code) => {
-    const { api } = this.context;
-
-    this.setState(validateCode(code, api), this.estimateGas);
+    this.setState(validateCode(code), this.estimateGas);
   }
 
   onDeployStart = () => {
@@ -457,10 +459,15 @@ class DeployContract extends Component {
 
     this.setState({ step: 'DEPLOYMENT' });
 
-    api
-      .newContract(abiParsed)
+    const contract = api.newContract(abiParsed);
+
+    contract
       .deploy(options, params, this.onDeploymentState)
       .then((address) => {
+        const blockNumber = contract._receipt
+          ? contract.receipt.blockNumber.toNumber()
+          : null;
+
         return Promise.all([
           api.parity.setAccountName(address, name),
           api.parity.setAccountMeta(address, {
@@ -468,8 +475,9 @@ class DeployContract extends Component {
             contract: true,
             timestamp: Date.now(),
             deleted: false,
-            source,
-            description
+            blockNumber,
+            description,
+            source
           })
         ])
         .then(() => {

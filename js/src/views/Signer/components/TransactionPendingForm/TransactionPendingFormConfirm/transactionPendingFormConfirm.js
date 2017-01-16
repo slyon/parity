@@ -14,13 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
+import keycode from 'keycode';
+import RaisedButton from 'material-ui/RaisedButton';
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import RaisedButton from 'material-ui/RaisedButton';
 import ReactTooltip from 'react-tooltip';
-import keycode from 'keycode';
 
 import { Form, Input, IdentityIcon } from '~/ui';
 
@@ -77,13 +76,28 @@ class TransactionPendingFormConfirm extends Component {
     }
   }
 
+  getPasswordHint () {
+    const { account } = this.props;
+    const accountHint = account && account.meta && account.meta.passwordHint;
+
+    if (accountHint) {
+      return accountHint;
+    }
+
+    const { wallet } = this.state;
+    const walletHint = wallet && wallet.meta && wallet.meta.passwordHint;
+
+    return walletHint || null;
+  }
+
   render () {
     const { account, address, isSending } = this.props;
     const { password, wallet, walletError } = this.state;
     const isExternal = !account.uuid;
 
-    const passwordHint = account.meta && account.meta.passwordHint
-      ? (<div><span>(hint) </span>{ account.meta.passwordHint }</div>)
+    const passwordHintText = this.getPasswordHint();
+    const passwordHint = passwordHintText
+      ? (<div><span>(hint) </span>{ passwordHintText }</div>)
       : null;
 
     const isWalletOk = !isExternal || (walletError === null && wallet !== null);
@@ -170,11 +184,25 @@ class TransactionPendingFormConfirm extends Component {
   }
 
   onKeySelect = (event) => {
+    // Check that file have been selected
+    if (event.target.files.length === 0) {
+      return this.setState({
+        wallet: null,
+        walletError: null
+      });
+    }
+
     const fileReader = new FileReader();
 
     fileReader.onload = (e) => {
       try {
         const wallet = JSON.parse(e.target.result);
+
+        try {
+          if (wallet && typeof wallet.meta === 'string') {
+            wallet.meta = JSON.parse(wallet.meta);
+          }
+        } catch (e) {}
 
         this.setState({
           wallet,
@@ -218,22 +246,18 @@ class TransactionPendingFormConfirm extends Component {
   }
 }
 
-function mapStateToProps (initState, initProps) {
-  const { accounts } = initState.personal;
+function mapStateToProps (_, initProps) {
   const { address } = initProps;
 
-  const account = accounts[address] || {};
+  return (state) => {
+    const { accounts } = state.personal;
+    const account = accounts[address] || {};
 
-  return () => {
     return { account };
   };
 }
 
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({}, dispatch);
-}
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  null
 )(TransactionPendingFormConfirm);

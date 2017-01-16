@@ -21,6 +21,7 @@ mod instant_seal;
 mod basic_authority;
 mod authority_round;
 mod tendermint;
+mod validator_set;
 
 pub use self::null_engine::NullEngine;
 pub use self::instant_seal::InstantSeal;
@@ -28,6 +29,7 @@ pub use self::basic_authority::BasicAuthority;
 pub use self::authority_round::AuthorityRound;
 pub use self::tendermint::Tendermint;
 
+use std::sync::Weak;
 use util::*;
 use account_provider::AccountProvider;
 use block::ExecutedBlock;
@@ -36,13 +38,12 @@ use env_info::EnvInfo;
 use error::Error;
 use spec::CommonParams;
 use evm::Schedule;
-use io::IoChannel;
-use service::ClientIoMessage;
 use header::Header;
-use transaction::SignedTransaction;
+use transaction::{UnverifiedTransaction, SignedTransaction};
 use ethereum::ethash;
 use blockchain::extras::BlockDetails;
 use views::HeaderView;
+use client::Client;
 
 /// Voting errors.
 #[derive(Debug)]
@@ -154,9 +155,15 @@ pub trait Engine : Sync + Send {
 	/// Additional verification for transactions in blocks.
 	// TODO: Add flags for which bits of the transaction to check.
 	// TODO: consider including State in the params.
-	fn verify_transaction_basic(&self, _t: &SignedTransaction, _header: &Header) -> Result<(), Error> { Ok(()) }
+	fn verify_transaction_basic(&self, t: &UnverifiedTransaction, _header: &Header) -> Result<(), Error> {
+		t.check_low_s()?;
+		Ok(())
+	}
+
 	/// Verify a particular transaction is valid.
-	fn verify_transaction(&self, _t: &SignedTransaction, _header: &Header) -> Result<(), Error> { Ok(()) }
+	fn verify_transaction(&self, t: UnverifiedTransaction, _header: &Header) -> Result<SignedTransaction, Error> {
+		SignedTransaction::new(t)
+	}
 
 	/// The network ID that transactions should be signed with.
 	fn signing_network_id(&self, _env_info: &EnvInfo) -> Option<u64> { None }
@@ -207,14 +214,15 @@ pub trait Engine : Sync + Send {
 	/// Register an account which signs consensus messages.
 	fn set_signer(&self, _address: Address, _password: String) {}
 
-	/// Stops any services that the may hold the Engine and makes it safe to drop.
-	fn stop(&self) {}
-
-	/// Add a channel for communication with Client which can be used for sealing.
-	fn register_message_channel(&self, _message_channel: IoChannel<ClientIoMessage>) {}
+	/// Add Client which can be used for sealing, querying the state and sending messages.
+	fn register_client(&self, _client: Weak<Client>) {}
 
 	/// Add an account provider useful for Engines that sign stuff.
 	fn register_account_provider(&self, _account_provider: Arc<AccountProvider>) {}
+
 	/// Trigger next step of the consensus engine.
 	fn step(&self) {}
+
+	/// Stops any services that the may hold the Engine and makes it safe to drop.
+	fn stop(&self) {}
 }

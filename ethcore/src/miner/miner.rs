@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
-use rayon::prelude::*;
 use std::time::{Instant, Duration};
 
 use util::*;
@@ -26,7 +25,7 @@ use client::TransactionImportResult;
 use executive::contract_address;
 use block::{ClosedBlock, IsBlock, Block};
 use error::*;
-use transaction::{Action, SignedTransaction, PendingTransaction};
+use transaction::{Action, UnverifiedTransaction, PendingTransaction, SignedTransaction};
 use receipt::{Receipt, RichReceipt};
 use spec::Spec;
 use engines::{Engine, Seal};
@@ -299,9 +298,9 @@ impl Miner {
 		self.sealing_work.lock().queue.peek_last_ref().map(|b| b.block().fields().state.clone())
 	}
 
-	/// Get `Some` `clone()` of the current pending block's state or `None` if we're not sealing.
+	/// Get `Some` `clone()` of the current pending block or `None` if we're not sealing.
 	pub fn pending_block(&self) -> Option<Block> {
-		self.sealing_work.lock().queue.peek_last_ref().map(|b| b.base().clone())
+		self.sealing_work.lock().queue.peek_last_ref().map(|b| b.to_base())
 	}
 
 	#[cfg_attr(feature="dev", allow(match_same_arms))]
@@ -417,15 +416,12 @@ impl Miner {
 
 		let block = open_block.close();
 
-		let fetch_account = |a: &Address| AccountDetails {
-			nonce: chain.latest_nonce(a),
-			balance: chain.latest_balance(a),
-		};
+		let fetch_nonce = |a: &Address| chain.latest_nonce(a);
 
 		{
 			let mut queue = self.transaction_queue.lock();
 			for hash in invalid_transactions {
-				queue.remove_invalid(&hash, &fetch_account);
+				queue.remove_invalid(&hash, &fetch_nonce);
 			}
 			for hash in transactions_to_penalize {
 				queue.penalize(&hash);
@@ -579,11 +575,11 @@ impl Miner {
 	fn add_transactions_to_queue(
 		&self,
 		chain: &MiningBlockChainClient,
-		transactions: Vec<SignedTransaction>,
+		transactions: Vec<UnverifiedTransaction>,
 		default_origin: TransactionOrigin,
 		min_block: Option<BlockNumber>,
-		transaction_queue: &mut BanningTransactionQueue)
-		-> Vec<Result<TransactionImportResult, Error>> {
+		transaction_queue: &mut BanningTransactionQueue,
+	) -> Vec<Result<TransactionImportResult, Error>> {
 
 		let fetch_account = |a: &Address| AccountDetails {
 			nonce: chain.latest_nonce(a),
@@ -597,31 +593,36 @@ impl Miner {
 		let schedule = chain.latest_schedule();
 		let gas_required = |tx: &SignedTransaction| tx.gas_required(&schedule).into();
 		let best_block_header = chain.best_block_header().decode();
+		let insertion_time = chain.chain_info().best_block_number;
+
 		transactions.into_iter()
 			.map(|tx| {
-				if chain.transaction_block(TransactionId::Hash(tx.hash())).is_some() {
-					debug!(target: "miner", "Rejected tx {:?}: already in the blockchain", tx.hash());
+				let hash = tx.hash();
+				if chain.transaction_block(TransactionId::Hash(hash)).is_some() {
+					debug!(target: "miner", "Rejected tx {:?}: already in the blockchain", hash);
 					return Err(Error::Transaction(TransactionError::AlreadyImported));
 				}
-				match self.engine.verify_transaction_basic(&tx, &best_block_header) {
+				match self.engine.verify_transaction_basic(&tx, &best_block_header)
+					.and_then(|_| self.engine.verify_transaction(tx, &best_block_header))
+				{
 					Err(e) => {
-						debug!(target: "miner", "Rejected tx {:?} with invalid signature: {:?}", tx.hash(), e);
+						debug!(target: "miner", "Rejected tx {:?} with invalid signature: {:?}", hash, e);
 						Err(e)
 					},
-					Ok(()) => {
+					Ok(transaction) => {
 						let origin = accounts.as_ref().and_then(|accounts| {
-							tx.sender().ok().and_then(|sender| match accounts.contains(&sender) {
+							match accounts.contains(&transaction.sender()) {
 								true => Some(TransactionOrigin::Local),
 								false => None,
-							})
+							}
 						}).unwrap_or(default_origin);
 
 						match origin {
 							TransactionOrigin::Local | TransactionOrigin::RetractedBlock => {
-								transaction_queue.add(tx, origin, min_block, &fetch_account, &gas_required)
+								transaction_queue.add(transaction, origin, insertion_time, min_block, &fetch_account, &gas_required)
 							},
 							TransactionOrigin::External => {
-								transaction_queue.add_with_banlist(tx, &fetch_account, &gas_required)
+								transaction_queue.add_with_banlist(transaction, insertion_time, &fetch_account, &gas_required)
 							}
 						}
 					},
@@ -674,7 +675,7 @@ impl MinerService for Miner {
 		}
 	}
 
-	fn call(&self, chain: &MiningBlockChainClient, t: &SignedTransaction, analytics: CallAnalytics) -> Result<Executed, CallError> {
+	fn call(&self, client: &MiningBlockChainClient, t: &SignedTransaction, analytics: CallAnalytics) -> Result<Executed, CallError> {
 		let sealing_work = self.sealing_work.lock();
 		match sealing_work.queue.peek_last_ref() {
 			Some(work) => {
@@ -682,7 +683,7 @@ impl MinerService for Miner {
 
 				// TODO: merge this code with client.rs's fn call somwhow.
 				let header = block.header();
-				let last_hashes = Arc::new(chain.last_hashes());
+				let last_hashes = Arc::new(client.last_hashes());
 				let env_info = EnvInfo {
 					number: header.number(),
 					author: *header.author(),
@@ -696,10 +697,7 @@ impl MinerService for Miner {
 				let mut state = block.state().clone();
 				let original_state = if analytics.state_diffing { Some(state.clone()) } else { None };
 
-				let sender = t.sender().map_err(|e| {
-					let message = format!("Transaction malformed: {:?}", e);
-					ExecutionError::TransactionMalformed(message)
-				})?;
+				let sender = t.sender();
 				let balance = state.balance(&sender);
 				let needed_balance = t.value + t.gas * t.gas_price;
 				if balance < needed_balance {
@@ -707,16 +705,14 @@ impl MinerService for Miner {
 					state.add_balance(&sender, &(needed_balance - balance), CleanupMode::NoEmpty);
 				}
 				let options = TransactOptions { tracing: analytics.transaction_tracing, vm_tracing: analytics.vm_tracing, check_nonce: false };
-				let mut ret = Executive::new(&mut state, &env_info, &*self.engine, chain.vm_factory()).transact(t, options)?;
+				let mut ret = Executive::new(&mut state, &env_info, &*self.engine, client.vm_factory()).transact(t, options)?;
 
 				// TODO gav move this into Executive.
 				ret.state_diff = original_state.map(|original| state.diff_from(original));
 
 				Ok(ret)
 			},
-			None => {
-				chain.call(t, BlockId::Latest, analytics)
-			}
+			None => client.call(t, BlockId::Latest, analytics)
 		}
 	}
 
@@ -765,9 +761,17 @@ impl MinerService for Miner {
 			if let Some(ref ap) = self.accounts {
 				ap.sign(address.clone(), Some(password.clone()), Default::default())?;
 			}
-			let mut sealing_work = self.sealing_work.lock();
-			sealing_work.enabled = self.engine.is_sealer(&address).unwrap_or(false);
-			*self.author.write() = address;
+			// Limit the scope of the locks.
+			{
+				let mut sealing_work = self.sealing_work.lock();
+				sealing_work.enabled = self.engine.is_sealer(&address).unwrap_or(false);
+				*self.author.write() = address;
+			}
+			// --------------------------------------------------------------------------
+			// | NOTE Code below may require author and sealing_work locks              |
+			// | (some `Engine`s call `EngineClient.update_sealing()`)                  |.
+			// | Make sure to release the locks before calling that method.             |
+			// --------------------------------------------------------------------------
 			self.engine.set_signer(address, password);
 		}
 		Ok(())
@@ -838,7 +842,7 @@ impl MinerService for Miner {
 	fn import_external_transactions(
 		&self,
 		chain: &MiningBlockChainClient,
-		transactions: Vec<SignedTransaction>
+		transactions: Vec<UnverifiedTransaction>
 	) -> Vec<Result<TransactionImportResult, Error>> {
 		trace!(target: "external_tx", "Importing external transactions");
 		let results = {
@@ -871,8 +875,9 @@ impl MinerService for Miner {
 		let imported = {
 			// Be sure to release the lock before we call prepare_work_sealing
 			let mut transaction_queue = self.transaction_queue.lock();
+			// We need to re-validate transactions
 			let import = self.add_transactions_to_queue(
-				chain, vec![pending.transaction], TransactionOrigin::Local, pending.min_block, &mut transaction_queue
+				chain, vec![pending.transaction.into()], TransactionOrigin::Local, pending.min_block, &mut transaction_queue
 			).pop().expect("one result returned per added transaction; one added => one result; qed");
 
 			match import {
@@ -1008,8 +1013,7 @@ impl MinerService for Miner {
 							contract_address: match tx.action {
 								Action::Call(_) => None,
 								Action::Create => {
-									let sender = tx.sender()
-										.expect("transactions in pending block have already been checked for valid sender; qed");
+									let sender = tx.sender();
 									Some(contract_address(&sender, &tx.nonce))
 								}
 							},
@@ -1121,28 +1125,27 @@ impl MinerService for Miner {
 
 		// Then import all transactions...
 		{
-			retracted.par_iter()
-				.map(|hash| {
-					let block = chain.block(BlockId::Hash(*hash))
-						.expect("Client is sending message after commit to db and inserting to chain; the block is available; qed");
-					let txs = block.transactions();
-					// populate sender
-					for tx in &txs {
-						let _sender = tx.sender();
-					}
-					txs
-				}).for_each(|txs| {
-					let mut transaction_queue = self.transaction_queue.lock();
-					let _ = self.add_transactions_to_queue(
-						chain, txs, TransactionOrigin::RetractedBlock, None, &mut transaction_queue
-					);
-				});
+
+			let mut transaction_queue = self.transaction_queue.lock();
+			for hash in retracted {
+				let block = chain.block(BlockId::Hash(*hash))
+					.expect("Client is sending message after commit to db and inserting to chain; the block is available; qed");
+				let txs = block.transactions();
+				let _ = self.add_transactions_to_queue(
+					chain, txs, TransactionOrigin::RetractedBlock, None, &mut transaction_queue
+				);
+			}
 		}
 
 		// ...and at the end remove the old ones
 		{
+			let fetch_account = |a: &Address| AccountDetails {
+				nonce: chain.latest_nonce(a),
+				balance: chain.latest_balance(a),
+			};
+			let time = chain.chain_info().best_block_number;
 			let mut transaction_queue = self.transaction_queue.lock();
-			transaction_queue.remove_old(|sender| chain.latest_nonce(sender));
+			transaction_queue.remove_old(&fetch_account, time);
 		}
 
 		if enacted.len() > 0 {
@@ -1167,7 +1170,7 @@ mod tests {
 	use ethkey::{Generator, Random};
 	use client::{BlockChainClient, TestBlockChainClient, EachBlockWith, TransactionImportResult};
 	use header::BlockNumber;
-	use types::transaction::{Transaction, SignedTransaction, PendingTransaction, Action};
+	use types::transaction::{SignedTransaction, Transaction, PendingTransaction, Action};
 	use spec::Spec;
 	use tests::helpers::{generate_dummy_client};
 
@@ -1281,7 +1284,7 @@ mod tests {
 		// given
 		let client = TestBlockChainClient::default();
 		let miner = miner();
-		let transaction = transaction();
+		let transaction = transaction().into();
 		let best_block = 0;
 		// when
 		let res = miner.import_external_transactions(&client, vec![transaction]).pop().unwrap();
@@ -1303,7 +1306,7 @@ mod tests {
 		// By default resealing is not required.
 		assert!(!miner.requires_reseal(1u8.into()));
 
-		miner.import_external_transactions(&client, vec![transaction()]).pop().unwrap().unwrap();
+		miner.import_external_transactions(&client, vec![transaction().into()]).pop().unwrap().unwrap();
 		assert!(miner.prepare_work_sealing(&client));
 		// Unless asked to prepare work.
 		assert!(miner.requires_reseal(1u8.into()));
@@ -1316,14 +1319,14 @@ mod tests {
 		let c = generate_dummy_client(2);
 		let client = c.reference().as_ref();
 
-		assert_eq!(miner.import_external_transactions(client, vec![transaction()]).pop().unwrap().unwrap(), TransactionImportResult::Current);
+		assert_eq!(miner.import_external_transactions(client, vec![transaction().into()]).pop().unwrap().unwrap(), TransactionImportResult::Current);
 
 		miner.update_sealing(client);
 		client.flush_queue();
 		assert!(miner.pending_block().is_none());
 		assert_eq!(client.chain_info().best_block_number, 3 as BlockNumber);
 
-		assert_eq!(miner.import_own_transaction(client, PendingTransaction::new(transaction(), None)).unwrap(), TransactionImportResult::Current);
+		assert_eq!(miner.import_own_transaction(client, PendingTransaction::new(transaction().into(), None)).unwrap(), TransactionImportResult::Current);
 
 		miner.update_sealing(client);
 		client.flush_queue();

@@ -16,7 +16,6 @@
 
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 
 import AddressSelect from '../AddressSelect';
 
@@ -27,6 +26,7 @@ class InputAddressSelect extends Component {
     contracts: PropTypes.object.isRequired,
 
     allowCopy: PropTypes.bool,
+    className: PropTypes.string,
     error: PropTypes.string,
     hint: PropTypes.string,
     label: PropTypes.string,
@@ -36,13 +36,14 @@ class InputAddressSelect extends Component {
   };
 
   render () {
-    const { accounts, allowCopy, contacts, contracts, label, hint, error, value, onChange, readOnly } = this.props;
+    const { accounts, allowCopy, className, contacts, contracts, label, hint, error, value, onChange, readOnly } = this.props;
 
     return (
       <AddressSelect
         allowCopy={ allowCopy }
         allowInput
         accounts={ accounts }
+        className={ className }
         contacts={ contacts }
         contracts={ contracts }
         error={ error }
@@ -66,11 +67,7 @@ function mapStateToProps (state) {
   };
 }
 
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({}, dispatch);
-}
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  null
 )(InputAddressSelect);

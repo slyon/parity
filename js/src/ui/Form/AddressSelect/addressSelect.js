@@ -25,6 +25,7 @@ import TextFieldUnderline from 'material-ui/TextField/TextFieldUnderline';
 
 import AccountCard from '~/ui/AccountCard';
 import InputAddress from '~/ui/Form/InputAddress';
+import Loading from '~/ui/Loading';
 import Portal from '~/ui/Portal';
 import { nodeOrStringProptype } from '~/util/proptypes';
 import { validateAddress } from '~/util/validation';
@@ -56,10 +57,12 @@ class AddressSelect extends Component {
     contacts: PropTypes.object,
     contracts: PropTypes.object,
     tokens: PropTypes.object,
+    reverse: PropTypes.object,
 
     // Optional props
     allowCopy: PropTypes.bool,
     allowInput: PropTypes.bool,
+    className: PropTypes.string,
     disabled: PropTypes.bool,
     error: nodeOrStringProptype(),
     hint: nodeOrStringProptype(),
@@ -123,13 +126,14 @@ class AddressSelect extends Component {
 
   renderInput () {
     const { focused } = this.state;
-    const { accountsInfo, allowCopy, disabled, error, hint, label, readOnly, value } = this.props;
+    const { accountsInfo, allowCopy, className, disabled, error, hint, label, readOnly, value } = this.props;
 
     const input = (
       <InputAddress
         accountsInfo={ accountsInfo }
-        allowCopy={ allowCopy }
-        disabled={ disabled }
+        allowCopy={ (disabled || readOnly) && allowCopy ? allowCopy : false }
+        className={ className }
+        disabled={ disabled || readOnly }
         error={ error }
         hint={ hint }
         focused={ focused }
@@ -179,17 +183,18 @@ class AddressSelect extends Component {
         <label className={ styles.label } htmlFor={ id }>
           { label }
         </label>
-        <input
-          id={ id }
-          className={ styles.input }
-          placeholder={ ilHint }
-
-          onBlur={ this.handleInputBlur }
-          onFocus={ this.handleInputFocus }
-          onChange={ this.handleChange }
-
-          ref={ this.setInputRef }
-        />
+        <div className={ styles.outerInput }>
+          <input
+            id={ id }
+            className={ styles.input }
+            placeholder={ ilHint }
+            onBlur={ this.handleInputBlur }
+            onFocus={ this.handleInputFocus }
+            onChange={ this.handleChange }
+            ref={ this.setInputRef }
+          />
+          { this.renderLoader() }
+        </div>
 
         <div className={ styles.underline }>
           <TextFieldUnderline
@@ -204,6 +209,19 @@ class AddressSelect extends Component {
         { this.renderRegistryValues() }
         { this.renderAccounts() }
       </Portal>
+    );
+  }
+
+  renderLoader () {
+    if (!this.store.loading) {
+      return null;
+    }
+
+    return (
+      <Loading
+        className={ styles.loader }
+        size={ 0.5 }
+      />
     );
   }
 
@@ -301,7 +319,9 @@ class AddressSelect extends Component {
 
     return (
       <div className={ styles.category } key={ `${key}_${index}` }>
-        <div className={ styles.title }>{ label }</div>
+        <div className={ styles.title }>
+          <h3>{ label }</h3>
+        </div>
         { content }
       </div>
     );
@@ -582,10 +602,12 @@ class AddressSelect extends Component {
 function mapStateToProps (state) {
   const { accountsInfo } = state.personal;
   const { balances } = state.balances;
+  const { reverse } = state.registry;
 
   return {
     accountsInfo,
-    balances
+    balances,
+    reverse
   };
 }
 
