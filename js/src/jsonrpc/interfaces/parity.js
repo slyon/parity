@@ -15,17 +15,9 @@
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
 import { Address, Data, Hash, Quantity } from '../types';
+import { fromDecimal } from '../helpers';
 
 export default {
-  acceptNonReservedPeers: {
-    desc: '?',
-    params: [],
-    returns: {
-      type: Boolean,
-      desc: '?'
-    }
-  },
-
   accountsInfo: {
     desc: 'returns a map of accounts as an object',
     params: [],
@@ -61,20 +53,6 @@ export default {
           desc: 'The account Uuid, or `null` if not available/unknown/not applicable.'
         }
       }
-    }
-  },
-
-  addReservedPeer: {
-    desc: '?',
-    params: [
-      {
-        type: String,
-        desc: 'Enode'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: '?'
     }
   },
 
@@ -162,30 +140,12 @@ export default {
     }
   },
 
-  dropNonReservedPeers: {
-    desc: '?',
-    params: [],
-    returns: {
-      type: Boolean,
-      desc: '?'
-    }
-  },
-
   enode: {
     desc: 'Returns the node enode URI',
     params: [],
     returns: {
       type: String,
       desc: 'Enode URI'
-    }
-  },
-
-  executeUpgrade: {
-    desc: 'Performs an upgrade',
-    params: [],
-    returns: {
-      type: Boolean,
-      desc: 'returns true if the upgrade to the release specified in parity_upgradeReady was successfully executed, false if not'
     }
   },
 
@@ -256,20 +216,6 @@ export default {
     returns: {
       type: Array,
       desc: 'The list of available accounts'
-    }
-  },
-
-  hashContent: {
-    desc: 'Creates a hash of the file as retrieved',
-    params: [
-      {
-        type: String,
-        desc: 'The url of the content'
-      }
-    ],
-    returns: {
-      type: Hash,
-      desc: 'The hash of the content'
     }
   },
 
@@ -535,20 +481,6 @@ export default {
     }
   },
 
-  removeReservedPeer: {
-    desc: '?',
-    params: [
-      {
-        type: String,
-        desc: 'Encode'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: '?'
-    }
-  },
-
   registryAddress: {
     desc: 'The address for the global registry',
     params: [],
@@ -603,21 +535,6 @@ export default {
     }
   },
 
-  setAuthor: {
-    desc: 'Changes author (coinbase) for mined blocks.',
-    params: [
-      {
-        type: Address,
-        desc: '20 Bytes - Address',
-        format: 'inputAddressFormatter'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'whether the call was successful'
-    }
-  },
-
   setDappsAddresses: {
     desc: 'Sets the available addresses for a dapp',
     params: [
@@ -628,65 +545,6 @@ export default {
       {
         type: Array,
         desc: 'Array of available accounts available to the dapp'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'True if the call succeeded'
-    }
-  },
-
-  setExtraData: {
-    desc: 'Changes extra data for newly mined blocks',
-    params: [
-      {
-        type: Data,
-        desc: 'Extra Data',
-        format: 'utils.toHex'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'whether the call was successful'
-    }
-  },
-
-  setGasFloorTarget: {
-    desc: 'Changes current gas floor target.',
-    params: [
-      {
-        type: Quantity,
-        desc: 'Gas Floor Target',
-        format: 'utils.toHex'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'whether the call was successful'
-    }
-  },
-
-  setMinGasPrice: {
-    desc: 'Changes minimal gas price for transaction to be accepted to the queue.',
-    params: [
-      {
-        type: Quantity,
-        desc: 'Minimal gas price',
-        format: 'utils.toHex'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'whether the call was successful'
-    }
-  },
-
-  setMode: {
-    desc: 'Changes the mode',
-    params: [
-      {
-        type: String,
-        desc: 'The mode to set, one of "active", "passive", "dark", "offline"'
       }
     ],
     returns: {
@@ -706,21 +564,6 @@ export default {
     returns: {
       type: Boolean,
       desc: 'True if the call succeeded'
-    }
-  },
-
-  setTransactionsLimit: {
-    desc: 'Changes limit for transactions in queue.',
-    params: [
-      {
-        type: Quantity,
-        desc: 'New Limit',
-        format: 'utils.toHex'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'whether the call was successful'
     }
   },
 
@@ -752,21 +595,295 @@ export default {
     }
   },
 
-  upgradeReady: {
-    desc: 'returns a ReleaseInfo object describing the release which is available for upgrade or null if none is available',
-    params: [],
-    returns: {
-      type: Object,
-      desc: '{"binary":H,"fork":15100,"is_critical":true,"version":V} where H is the Keccak-256 checksum of the release parity binary and V is a VersionInfo object describing the release'
-    }
-  },
-
   versionInfo: {
     desc: 'returns a VersionInfo object describing our current version',
     params: [],
     returns: {
       type: Object,
       desc: '{"hash":H,"track":T,"version":{"major":N,"minor":N,"patch":N}} (H is a 160-bit Git commit hash, T is a ReleaseTrack, either "stable", "beta", "nightly" or "unknown" and N is a version number)'
+    }
+  },
+
+  /*
+   * `parity_set` module methods
+   * ===========================
+   */
+  setMinGasPrice: {
+    subdoc: 'set',
+    desc: 'Changes minimal gas price for transaction to be accepted to the queue.',
+    params: [
+      {
+        type: Quantity,
+        desc: 'Minimal gas price',
+        format: 'utils.toHex',
+        example: fromDecimal(1000)
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: 'whether the call was successful',
+      example: true
+    }
+  },
+
+  setGasFloorTarget: {
+    subdoc: 'set',
+    desc: 'Sets a new gas floor target for mined blocks..',
+    params: [
+      {
+        type: Quantity,
+        desc: '(default: `0x0`) Gas floor target.',
+        format: 'utils.toHex',
+        example: fromDecimal(1000)
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful.',
+      example: true
+    }
+  },
+
+  setGasCeilTarget: {
+    subdoc: 'set',
+    desc: 'Sets new gas ceiling target for mined blocks.',
+    params: [
+      {
+        type: Quantity,
+        desc: '(default: `0x0`) Gas ceiling target.',
+        format: 'utils.toHex',
+        example: fromDecimal(10000000000)
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful.',
+      example: true
+    }
+  },
+
+  setExtraData: {
+    subdoc: 'set',
+    desc: 'Changes extra data for newly mined blocks',
+    params: [
+      {
+        type: Data,
+        desc: 'Extra Data',
+        format: 'utils.toHex',
+        example: '0x'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: 'whether the call was successful',
+      example: true
+    }
+  },
+
+  setAuthor: {
+    subdoc: 'set',
+    desc: 'Changes author (coinbase) for mined blocks.',
+    params: [
+      {
+        type: Address,
+        desc: '20 Bytes - Address',
+        format: 'inputAddressFormatter',
+        example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful.',
+      example: true
+    }
+  },
+
+  setMaxTransactionGas: {
+    subdoc: 'set',
+    desc: 'Sets the maximum amount of gas a single transaction may consume.',
+    params: [
+      {
+        type: Quantity,
+        desc: 'Gas amount',
+        format: 'utils.toHex',
+        example: fromDecimal(100000)
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful.',
+      example: true
+    }
+  },
+
+  setTransactionsLimit: {
+    subdoc: 'set',
+    desc: 'Changes limit for transactions in queue.',
+    params: [
+      {
+        type: Quantity,
+        desc: 'New Limit',
+        format: 'utils.toHex',
+        example: fromDecimal(1000)
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: 'whether the call was successful',
+      example: true
+    }
+  },
+
+  addReservedPeer: {
+    subdoc: 'set',
+    desc: 'Add a reserved peer.',
+    params: [
+      {
+        type: String,
+        desc: 'Enode address',
+        example: 'enode://a979fb575495b8d6db44f750317d0f4622bf4c2aa3365d6af7c284339968eef29b69ad0dce72a4d8db5ebb4968de0e3bec910127f134779fbcb0cb6d3331163c@22.99.55.44:7770'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if successful.',
+      example: true
+    }
+  },
+
+  removeReservedPeer: {
+    subdoc: 'set',
+    desc: 'Remove a reserved peer.',
+    params: [
+      {
+        type: String,
+        desc: 'Encode address',
+        example: 'enode://a979fb575495b8d6db44f750317d0f4622bf4c2aa3365d6af7c284339968eef29b69ad0dce72a4d8db5ebb4968de0e3bec910127f134779fbcb0cb6d3331163c@22.99.55.44:7770'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if successful.',
+      example: true
+    }
+  },
+
+  dropNonReservedPeers: {
+    subdoc: 'set',
+    desc: 'Set Parity to drop all non-reserved peers. To restore default behavior call [parity_acceptNonReservedPeers](#parity_acceptnonreservedpeers).',
+    params: [],
+    returns: {
+      type: Boolean,
+      desc: '`true` if successful.',
+      example: true
+    }
+  },
+
+  acceptNonReservedPeers: {
+    subdoc: 'set',
+    desc: 'Set Parity to accept non-reserved peers (default behavior).',
+    params: [],
+    returns: {
+      type: Boolean,
+      desc: '`true` if successful.',
+      example: true
+    }
+  },
+
+  hashContent: {
+    subdoc: 'set',
+    desc: 'Creates a hash of a file at a given URL.',
+    params: [
+      {
+        type: String,
+        desc: 'The url of the content.',
+        example: 'https://raw.githubusercontent.com/ethcore/parity/master/README.md'
+      }
+    ],
+    returns: {
+      type: Hash,
+      desc: 'The SHA-3 hash of the content.',
+      example: '0x2547ea3382099c7c76d33dd468063b32d41016aacb02cbd51ebc14ff5d2b6a43'
+    }
+  },
+
+  setMode: {
+    subdoc: 'set',
+    desc: 'Changes the operating mode of Parity.',
+    params: [
+      {
+        type: String,
+        desc: 'The mode to set, one of:\n  * `"active"` - Parity continuously syncs the chain.\n  * `"passive"` - Parity syncs initially, then sleeps and wakes regularly to resync.\n  * `"dark"` - Parity syncs only when the RPC is active.\n  * `"offline"` - Parity doesn\'t sync.\n',
+        example: 'passive'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call succeeded.',
+      example: true
+    }
+  },
+
+  setEngineSigner: {
+    subdoc: 'set',
+    desc: 'Sets an authority account for signing consensus messages. For more information check the [[Proof of Authority Chains]] page.',
+    params: [
+      {
+        type: Address,
+        desc: 'Identifier of a valid authority account.',
+        example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+      },
+      {
+        type: String,
+        desc: 'Passphrase to unlock the account.',
+        example: 'hunter2'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: 'True if the call succeeded',
+      example: true
+    }
+  },
+
+  upgradeReady: {
+    subdoc: 'set',
+    desc: 'Returns a ReleaseInfo object describing the release which is available for upgrade or `null` if none is available.',
+    params: [],
+    returns: {
+      type: Object,
+      desc: 'Details or `null` if no new release is available.',
+      details: {
+        version: {
+          type: Object,
+          desc: 'Information on the version.'
+        },
+        is_critical: {
+          type: Boolean,
+          desc: 'Does this release contain critical security updates?'
+        },
+        fork: {
+          type: Quantity,
+          desc: 'The latest fork that this release can handle.'
+        },
+        binary: {
+          type: Data,
+          desc: 'Keccak-256 checksum of the release parity binary, if known.',
+          optional: true
+        }
+      },
+      example: null
+    }
+  },
+
+  executeUpgrade: {
+    subdoc: 'set',
+    desc: 'Attempts to upgrade Parity to the version specified in [parity_upgradeReady](#parity_upgradeready).',
+    params: [],
+    returns: {
+      type: Boolean,
+      desc: 'returns `true` if the upgrade to the new release was successfully executed, `false` if not.',
+      example: true
     }
   }
 };

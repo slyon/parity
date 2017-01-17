@@ -162,7 +162,7 @@ function stringifyExample (example, dent = '') {
     const elements = keys.map((key, index) => {
       const value = example[key];
       const comma = index !== last ? ',' : '';
-      const comment = example[key]._comment ? ` // ${example[key]._comment}` : '';
+      const comment = value && value._comment ? ` // ${example[key]._comment}` : '';
 
       return `${JSON.stringify(key)}: ${stringifyExample(value, indent)}${comma}${comment}`;
     });
@@ -234,6 +234,25 @@ function buildParameters (params) {
 }
 
 Object.keys(interfaces).sort().forEach((group) => {
+  const spec = interfaces[group];
+
+  for (const key in spec) {
+    const method = spec[key];
+
+    if (!method || !method.subdoc) {
+      continue;
+    }
+
+    const subgroup = `${group}_${method.subdoc}`;
+
+    interfaces[subgroup] = interfaces[subgroup] || {};
+
+    interfaces[subgroup][key] = method;
+    delete spec[key];
+  }
+});
+
+Object.keys(interfaces).sort().forEach((group) => {
   let preamble = `# The \`${group}\` Module`;
   let markdown = `## JSON-RPC methods\n`;
 
@@ -247,7 +266,7 @@ Object.keys(interfaces).sort().forEach((group) => {
 
   Object.keys(spec).sort().forEach((iname) => {
     const method = spec[iname];
-    const name = `${group}_${iname}`;
+    const name = `${group.replace(/_.*$/, '')}_${iname}`;
 
     if (method.nodoc || method.deprecated) {
       info(`Skipping ${name}: ${method.nodoc || 'Deprecated'}`);
