@@ -93,7 +93,7 @@ The following options are possible for the \`defaultBlock\` parameter:
           },
           data: {
             type: Data,
-            desc: 'Hash of the method signature and encoded parameters. For details see [Ethereum Contract ABI](https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI).',
+            desc: '4 byte hash of the method signature followed by encoded parameters, 32 bytes each. For details see [Ethereum Contract ABI](https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI).',
             optional: true
           }
         },
