@@ -17,6 +17,12 @@
 import { Address, Data, Hash, Quantity } from '../types';
 import { fromDecimal } from '../helpers';
 
+const GROUP_MINING = 'Block Authoring (aka "mining")';
+const GROUP_DEV = 'Development';
+const GROUP_NODE = 'Node Settings';
+const GROUP_NET = 'Network Information';
+const GROUP_ACCOUNTS = 'Accounts (read-only) and Signatures';
+
 export default {
   accountsInfo: {
     desc: 'returns a map of accounts as an object',
@@ -28,29 +34,6 @@ export default {
         name: {
           type: String,
           desc: 'Account name'
-        }
-      }
-    }
-  },
-
-  allAccountsInfo: {
-    desc: 'returns a map of accounts as an object',
-    params: [],
-    returns: {
-      type: Array,
-      desc: 'Account metadata',
-      details: {
-        name: {
-          type: String,
-          desc: 'Account name'
-        },
-        meta: {
-          type: String,
-          desc: 'Encoded JSON string the defines additional account metadata'
-        },
-        uuid: {
-          type: String,
-          desc: 'The account Uuid, or `null` if not available/unknown/not applicable.'
         }
       }
     }
@@ -114,6 +97,7 @@ export default {
   },
 
   defaultExtraData: {
+    group: GROUP_MINING,
     desc: 'Returns the default extra data',
     params: [],
     returns: {
@@ -150,6 +134,7 @@ export default {
   },
 
   extraData: {
+    group: GROUP_MINING,
     desc: 'Returns currently set extra data',
     params: [],
     returns: {
@@ -159,6 +144,7 @@ export default {
   },
 
   gasFloorTarget: {
+    group: GROUP_MINING,
     desc: 'Returns current target for gas floor',
     params: [],
     returns: {
@@ -196,90 +182,12 @@ export default {
     }
   },
 
-  getDappsAddresses: {
-    desc: 'Returns the list of accounts available to a specific dapp',
-    params: [
-      {
-        type: String,
-        desc: 'Dapp Id'
-      }
-    ],
-    returns: {
-      type: Array,
-      desc: 'The list of available accounts'
-    }
-  },
-
   getNewDappsWhitelist: {
     desc: 'Returns the list of accounts available to a new dapps',
     params: [],
     returns: {
       type: Array,
       desc: 'The list of available accounts'
-    }
-  },
-
-  importGethAccounts: {
-    desc: 'Imports a list of accounts from geth',
-    params: [
-      {
-        type: Array,
-        desc: 'List of the geth addresses to import'
-      }
-    ],
-    returns: {
-      type: Array,
-      desc: 'Array of the imported addresses'
-    }
-  },
-
-  killAccount: {
-    desc: 'Deletes an account',
-    params: [
-      {
-        type: Address,
-        desc: 'The account to remove'
-      },
-      {
-        type: String,
-        desc: 'Account password'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'true on success'
-    }
-  },
-
-  listRecentDapps: {
-    desc: 'Returns a list of the most recent active dapps',
-    params: [],
-    returns: {
-      type: Array,
-      desc: 'Array of Dapp Ids'
-    }
-  },
-
-  removeAddress: {
-    desc: 'Removes an address from the addressbook',
-    params: [
-      {
-        type: Address,
-        desc: 'The address to remove'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'true on success'
-    }
-  },
-
-  listGethAccounts: {
-    desc: 'Returns a list of the accounts available from Geth',
-    params: [],
-    returns: {
-      type: Array,
-      desc: '20 Bytes addresses owned by the client.'
     }
   },
 
@@ -293,6 +201,7 @@ export default {
   },
 
   minGasPrice: {
+    group: GROUP_MINING,
     desc: 'Returns currently set minimal gas price',
     params: [],
     returns: {
@@ -344,60 +253,6 @@ export default {
     returns: {
       type: Quantity,
       desc: 'Port Number'
-    }
-  },
-
-  newAccountFromPhrase: {
-    desc: 'Creates a new account from a recovery passphrase',
-    params: [
-      {
-        type: String,
-        desc: 'Phrase'
-      },
-      {
-        type: String,
-        desc: 'Password'
-      }
-    ],
-    returns: {
-      type: Address,
-      desc: 'The created address'
-    }
-  },
-
-  newAccountFromSecret: {
-    desc: 'Creates a new account from a private ethstore secret key',
-    params: [
-      {
-        type: Data,
-        desc: 'Secret, 32-byte hex'
-      },
-      {
-        type: String,
-        desc: 'Password'
-      }
-    ],
-    returns: {
-      type: Address,
-      desc: 'The created address'
-    }
-  },
-
-  newAccountFromWallet: {
-    desc: 'Creates a new account from a JSON import',
-    params: [
-      {
-        type: String,
-        desc: 'JSON'
-      },
-      {
-        type: String,
-        desc: 'Password'
-      }
-    ],
-    returns: {
-      type: Address,
-      desc: 'The created address'
     }
   },
 
@@ -499,74 +354,6 @@ export default {
     }
   },
 
-  setAccountName: {
-    desc: 'Sets a name for the account',
-    params: [
-      {
-        type: Address,
-        desc: 'Address'
-      },
-      {
-        type: String,
-        desc: 'Name'
-      }
-    ],
-    returns: {
-      type: Object,
-      desc: 'Returns null in all cases'
-    }
-  },
-
-  setAccountMeta: {
-    desc: 'Sets metadata for the account',
-    params: [
-      {
-        type: Address,
-        desc: 'Address'
-      },
-      {
-        type: String,
-        desc: 'Metadata (JSON encoded)'
-      }
-    ],
-    returns: {
-      type: Object,
-      desc: 'Returns null in all cases'
-    }
-  },
-
-  setDappsAddresses: {
-    desc: 'Sets the available addresses for a dapp',
-    params: [
-      {
-        type: String,
-        desc: 'Dapp Id'
-      },
-      {
-        type: Array,
-        desc: 'Array of available accounts available to the dapp'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'True if the call succeeded'
-    }
-  },
-
-  setNewDappsWhitelist: {
-    desc: 'Sets the list of accounts available to new dapps',
-    params: [
-      {
-        type: Array,
-        desc: 'List of accounts available by default'
-      }
-    ],
-    returns: {
-      type: Boolean,
-      desc: 'True if the call succeeded'
-    }
-  },
-
   signerPort: {
     desc: 'Returns the port the signer is running on, error if not enabled',
     params: [],
@@ -601,6 +388,320 @@ export default {
     returns: {
       type: Object,
       desc: '{"hash":H,"track":T,"version":{"major":N,"minor":N,"patch":N}} (H is a 160-bit Git commit hash, T is a ReleaseTrack, either "stable", "beta", "nightly" or "unknown" and N is a version number)'
+    }
+  },
+
+  /*
+   * `parity_accounts` module methods
+   * ================================
+   */
+  allAccountsInfo: {
+    subdoc: 'accounts',
+    desc: 'returns a map of accounts as an object.',
+    params: [],
+    returns: {
+      type: Array,
+      desc: 'Account metadata.',
+      details: {
+        name: {
+          type: String,
+          desc: 'Account name.'
+        },
+        meta: {
+          type: String,
+          desc: 'Encoded JSON string the defines additional account metadata.'
+        },
+        uuid: {
+          type: String,
+          desc: 'The account Uuid, or `null` if not available/unknown/not applicable.'
+        }
+      },
+      example: {
+        '0x00a289b43e1e4825dbedf2a78ba60a640634dc40': {
+          meta: '{}',
+          name: 'Foobar',
+          uuid: '0b9e70e6-235b-682d-a15c-2a98c71b3945'
+        }
+      }
+    }
+  },
+
+  newAccountFromPhrase: {
+    subdoc: 'accounts',
+    desc: 'Creates a new account from a recovery phrase.',
+    params: [
+      {
+        type: String,
+        desc: 'Recovery phrase.',
+        example: 'stylus outing overhand dime radial seducing harmless uselessly evasive tastiness eradicate imperfect'
+      },
+      {
+        type: String,
+        desc: 'Password.',
+        example: 'hunter2'
+      }
+    ],
+    returns: {
+      type: Address,
+      desc: 'The created address.',
+      example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+    }
+  },
+
+  newAccountFromSecret: {
+    subdoc: 'accounts',
+    desc: 'Creates a new account from a private ethstore secret key.',
+    params: [
+      {
+        type: Data,
+        desc: 'Secret, 32-byte hex',
+        example: '0x1db2c0cf57505d0f4a3d589414f0a0025ca97421d2cd596a9486bc7e2cd2bf8b'
+      },
+      {
+        type: String,
+        desc: 'Password',
+        example: 'hunter2'
+      }
+    ],
+    returns: {
+      type: Address,
+      desc: 'The created address.',
+      example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+    }
+  },
+
+  newAccountFromWallet: {
+    subdoc: 'accounts',
+    desc: 'Creates a new account from a JSON import',
+    params: [
+      {
+        type: String,
+        desc: 'JSON'
+      },
+      {
+        type: String,
+        desc: 'Password'
+      }
+    ],
+    returns: {
+      type: Address,
+      desc: 'The created address'
+    }
+  },
+
+  setAccountName: {
+    subdoc: 'accounts',
+    desc: 'Sets a name for the account',
+    params: [
+      {
+        type: Address,
+        desc: 'Address',
+        example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+      },
+      {
+        type: String,
+        desc: 'Name',
+        example: 'Foobar'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful.',
+      example: true
+    }
+  },
+
+  setAccountMeta: {
+    subdoc: 'accounts',
+    desc: 'Sets metadata for the account',
+    params: [
+      {
+        type: Address,
+        desc: 'Address',
+        example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+      },
+      {
+        type: String,
+        desc: 'Metadata (JSON encoded)',
+        example: '{"foo":"bar"}'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful.',
+      example: true
+    }
+  },
+
+  testPassword: {
+    subdoc: 'accounts',
+    desc: 'Checks if a given password can unlock a given account, without actually unlocking it.',
+    params: [
+      {
+        type: Address,
+        desc: 'Account to test.',
+        example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+      },
+      {
+        type: String,
+        desc: 'Password to test.',
+        example: 'hunter2'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the account and password are valid.',
+      example: true
+    }
+  },
+
+  changePassword: {
+    subdoc: 'accounts',
+    desc: 'Change the password for a given account.',
+    params: [
+      {
+        type: Address,
+        desc: 'Address of the account.',
+        example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+      },
+      {
+        type: String,
+        desc: 'Old password',
+        example: 'hunter2'
+      },
+      {
+        type: String,
+        desc: 'New password',
+        example: 'bazqux5'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful.',
+      example: true
+    }
+  },
+
+  killAccount: {
+    subdoc: 'accounts',
+    desc: 'Deletes an account.',
+    params: [
+      {
+        type: Address,
+        desc: 'The account to remove.',
+        example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+      },
+      {
+        type: String,
+        desc: 'Account password.',
+        example: 'hunter2'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful.',
+      example: true
+    }
+  },
+
+  removeAddress: {
+    subdoc: 'accounts',
+    desc: 'Removes an address from the addressbook.',
+    params: [
+      {
+        type: Address,
+        desc: 'The address to remove.',
+        example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true`if the call was successful.',
+      example: true
+    }
+  },
+
+  setDappsAddresses: {
+    subdoc: 'accounts',
+    desc: 'Sets the available addresses for a dapp.',
+    params: [
+      {
+        type: String,
+        desc: 'Dapp Id.'
+      },
+      {
+        type: Array,
+        desc: 'Array of available accounts available to the dapp.'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful.'
+    }
+  },
+
+  getDappsAddresses: {
+    subdoc: 'accounts',
+    desc: 'Returns the list of accounts available to a specific dapp.',
+    params: [
+      {
+        type: String,
+        desc: 'Dapp Id.'
+      }
+    ],
+    returns: {
+      type: Array,
+      desc: 'The list of available accounts.'
+    }
+  },
+
+  setNewDappsWhitelist: {
+    subdoc: 'accounts',
+    desc: 'Sets the list of accounts available to new dapps.',
+    params: [
+      {
+        type: Array,
+        desc: 'List of accounts available by default.'
+      }
+    ],
+    returns: {
+      type: Boolean,
+      desc: '`true` if the call was successful'
+    }
+  },
+
+  listRecentDapps: {
+    subdoc: 'accounts',
+    desc: 'Returns a list of the most recent active dapps.',
+    params: [],
+    returns: {
+      type: Array,
+      desc: 'Array of Dapp Ids.'
+    }
+  },
+
+  importGethAccounts: {
+    subdoc: 'accounts',
+    desc: 'Imports a list of accounts from Geth.',
+    params: [
+      {
+        type: Array,
+        desc: 'List of the Geth addresses to import.'
+      }
+    ],
+    returns: {
+      type: Array,
+      desc: 'Array of the imported addresses.'
+    }
+  },
+
+  listGethAccounts: {
+    subdoc: 'accounts',
+    desc: 'Returns a list of the accounts available from Geth.',
+    params: [],
+    returns: {
+      type: Array,
+      desc: '20 Bytes addresses owned by the client.'
     }
   },
 
