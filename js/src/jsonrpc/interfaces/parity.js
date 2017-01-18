@@ -18,10 +18,10 @@ import { Address, Data, Hash, Quantity } from '../types';
 import { fromDecimal } from '../helpers';
 
 const GROUP_MINING = 'Block Authoring (aka "mining")';
-const GROUP_DEV = 'Development';
-const GROUP_NODE = 'Node Settings';
-const GROUP_NET = 'Network Information';
-const GROUP_ACCOUNTS = 'Accounts (read-only) and Signatures';
+// const GROUP_DEV = 'Development';
+// const GROUP_NODE = 'Node Settings';
+// const GROUP_NET = 'Network Information';
+// const GROUP_ACCOUNTS = 'Accounts (read-only) and Signatures';
 
 export default {
   accountsInfo: {
