@@ -263,6 +263,8 @@ Object.keys(interfaces).sort().forEach((group) => {
   }
 
   const content = [];
+  const tocMain = [];
+  const tocSections = {};
 
   Object.keys(spec).sort().forEach((iname) => {
     const method = spec[iname];
@@ -279,8 +281,17 @@ Object.keys(interfaces).sort().forEach((group) => {
     const returns = `- ${formatType(method.returns)}`;
     const example = buildExample(name, method);
 
-    markdown = `${markdown}\n- [${name}](#${name.toLowerCase()})`;
+    const { section } = method;
+    const toc = section ? tocSections[section] = tocSections[section] || [] : tocMain;
+
+    toc.push(`- [${name}](#${name.toLowerCase()})`);
     content.push(`### ${name}\n\n${desc}\n\n#### Parameters\n\n${params || 'None'}\n\n#### Returns\n\n${returns || 'None'}${example}`);
+  });
+
+  markdown = `${markdown}\n${tocMain.join('\n')}`;
+
+  Object.keys(tocSections).sort().forEach((section) => {
+    markdown = `${markdown}\n\n#### ${section}\n${tocSections[section].join('\n')}`;
   });
 
   markdown = `${markdown}\n\n## JSON-RPC API Reference\n\n${content.join('\n\n***\n\n')}\n\n`;

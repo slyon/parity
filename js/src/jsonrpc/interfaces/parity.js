@@ -17,11 +17,11 @@
 import { Address, Data, Hash, Quantity } from '../types';
 import { fromDecimal } from '../helpers';
 
-const GROUP_MINING = 'Block Authoring (aka "mining")';
-// const GROUP_DEV = 'Development';
-// const GROUP_NODE = 'Node Settings';
-// const GROUP_NET = 'Network Information';
-// const GROUP_ACCOUNTS = 'Accounts (read-only) and Signatures';
+const SECTION_MINING = 'Block Authoring (aka "mining")';
+const SECTION_DEV = 'Development';
+const SECTION_NODE = 'Node Settings';
+const SECTION_NET = 'Network Information';
+const SECTION_ACCOUNTS = 'Accounts (read-only) and Signatures';
 
 export default {
   accountsInfo: {
@@ -56,7 +56,8 @@ export default {
   },
 
   checkRequest: {
-    desc: 'Returns the transactionhash of the requestId (received from parity_postTransaction) if the request was confirmed',
+    section: SECTION_ACCOUNTS,
+    desc: 'Returns the transaction hash of the requestId (received from parity_postTransaction) if the request was confirmed',
     params: [
       {
         type: Quantity,
@@ -79,6 +80,7 @@ export default {
   },
 
   dappsPort: {
+    section: SECTION_NODE,
     desc: 'Returns the port the dapps are running on, error if not enabled',
     params: [],
     returns: {
@@ -88,6 +90,7 @@ export default {
   },
 
   dappsInterface: {
+    section: SECTION_NODE,
     desc: 'Returns the interface the dapps are running on, error if not enabled',
     params: [],
     returns: {
@@ -97,7 +100,7 @@ export default {
   },
 
   defaultExtraData: {
-    group: GROUP_MINING,
+    section: SECTION_MINING,
     desc: 'Returns the default extra data',
     params: [],
     returns: {
@@ -107,6 +110,7 @@ export default {
   },
 
   devLogs: {
+    section: SECTION_DEV,
     desc: 'Returns latest logs of your node',
     params: [],
     returns: {
@@ -116,6 +120,7 @@ export default {
   },
 
   devLogsLevels: {
+    section: SECTION_DEV,
     desc: 'Returns current log level settings',
     params: [],
     returns: {
@@ -125,6 +130,7 @@ export default {
   },
 
   enode: {
+    section: SECTION_NODE,
     desc: 'Returns the node enode URI',
     params: [],
     returns: {
@@ -134,7 +140,7 @@ export default {
   },
 
   extraData: {
-    group: GROUP_MINING,
+    section: SECTION_MINING,
     desc: 'Returns currently set extra data',
     params: [],
     returns: {
@@ -144,17 +150,29 @@ export default {
   },
 
   gasFloorTarget: {
-    group: GROUP_MINING,
-    desc: 'Returns current target for gas floor',
+    section: SECTION_MINING,
+    desc: 'Returns current target for gas floor.',
     params: [],
     returns: {
       type: Quantity,
-      desc: 'Gas Floor Target',
+      desc: 'Gas floor target.',
+      format: 'outputBigNumberFormatter'
+    }
+  },
+
+  gasCeilTarget: {
+    section: SECTION_MINING,
+    desc: 'Returns current target for gas ceiling.',
+    params: [],
+    returns: {
+      type: Quantity,
+      desc: 'Gas ceiling target.',
       format: 'outputBigNumberFormatter'
     }
   },
 
   gasPriceHistogram: {
+    section: SECTION_NET,
     desc: 'Returns a snapshot of the historic gas prices',
     params: [],
     returns: {
@@ -174,6 +192,7 @@ export default {
   },
 
   generateSecretPhrase: {
+    section: SECTION_ACCOUNTS,
     desc: 'Creates a secret phrase that can be associated with an account',
     params: [],
     returns: {
@@ -201,7 +220,7 @@ export default {
   },
 
   minGasPrice: {
-    group: GROUP_MINING,
+    section: SECTION_MINING,
     desc: 'Returns currently set minimal gas price',
     params: [],
     returns: {
@@ -212,6 +231,7 @@ export default {
   },
 
   mode: {
+    section: SECTION_NODE,
     desc: 'Get the mode. Results one of: "active", "passive", "dark", "offline".',
     params: [],
     returns: {
@@ -221,6 +241,7 @@ export default {
   },
 
   netChain: {
+    section: SECTION_NET,
     desc: 'Returns the name of the connected chain.',
     params: [],
     returns: {
@@ -230,6 +251,7 @@ export default {
   },
 
   netPeers: {
+    section: SECTION_NET,
     desc: 'Returns number of peers.',
     params: [],
     returns: {
@@ -248,6 +270,7 @@ export default {
   },
 
   netPort: {
+    section: SECTION_NET,
     desc: 'Returns network port the node is listening on.',
     params: [],
     returns: {
@@ -257,6 +280,7 @@ export default {
   },
 
   nextNonce: {
+    section: SECTION_NET,
     desc: 'Returns next available nonce for transaction from given account. Includes pending block and transaction queue.',
     params: [
       {
@@ -271,6 +295,7 @@ export default {
   },
 
   nodeName: {
+    section: SECTION_NODE,
     desc: 'Returns node name (identity)',
     params: [],
     returns: {
@@ -280,6 +305,7 @@ export default {
   },
 
   pendingTransactions: {
+    section: SECTION_NET,
     desc: 'Returns a list of transactions currently in the queue.',
     params: [],
     returns: {
@@ -298,7 +324,8 @@ export default {
   },
 
   phraseToAddress: {
-    desc: 'Converts a secret phrase into the corresponting address',
+    section: SECTION_ACCOUNTS,
+    desc: 'Converts a secret phrase into the corresponding address',
     params: [
       {
         type: String,
@@ -312,6 +339,7 @@ export default {
   },
 
   postTransaction: {
+    section: SECTION_ACCOUNTS,
     desc: 'Posts a transaction to the Signer.',
     params: [
       {
@@ -337,6 +365,7 @@ export default {
   },
 
   registryAddress: {
+    section: SECTION_NET,
     desc: 'The address for the global registry',
     params: [],
     returns: {
@@ -346,6 +375,7 @@ export default {
   },
 
   rpcSettings: {
+    section: SECTION_NET,
     desc: 'Returns basic settings of rpc (enabled, port, interface).',
     params: [],
     returns: {
@@ -354,7 +384,8 @@ export default {
     }
   },
 
-  signerPort: {
+  signerPortt: {
+    section: SECTION_NODE,
     desc: 'Returns the port the signer is running on, error if not enabled',
     params: [],
     returns: {
@@ -364,6 +395,7 @@ export default {
   },
 
   transactionsLimit: {
+    section: SECTION_MINING,
     desc: 'Changes limit for transactions in queue.',
     params: [],
     returns: {
@@ -374,6 +406,7 @@ export default {
   },
 
   unsignedTransactionsCount: {
+    section: SECTION_NET,
     desc: 'Returns number of unsigned transactions when running with Trusted Signer. Error otherwise',
     params: [],
     returns: {
