@@ -25,6 +25,7 @@ const SECTION_ACCOUNTS = 'Accounts (read-only) and Signatures';
 
 export default {
   accountsInfo: {
+    section: SECTION_ACCOUNTS,
     desc: 'returns a map of accounts as an object',
     params: [],
     returns: {
@@ -40,6 +41,7 @@ export default {
   },
 
   chainStatus: {
+    section: SECTION_NET,
     desc: 'Returns the information on warp sync blocks',
     params: [],
     returns: {
@@ -52,21 +54,6 @@ export default {
           optional: true
         }
       }
-    }
-  },
-
-  checkRequest: {
-    section: SECTION_ACCOUNTS,
-    desc: 'Returns the transaction hash of the requestId (received from parity_postTransaction) if the request was confirmed',
-    params: [
-      {
-        type: Quantity,
-        desc: 'The requestId to check for'
-      }
-    ],
-    returns: {
-      type: Hash,
-      desc: '32 Bytes - the transaction hash, or the zero hash if the transaction is not yet available'
     }
   },
 
@@ -338,23 +325,6 @@ export default {
     }
   },
 
-  postTransaction: {
-    section: SECTION_ACCOUNTS,
-    desc: 'Posts a transaction to the Signer.',
-    params: [
-      {
-        type: Object,
-        desc: 'see [eth_sendTransaction](#eth_sendTransaction)',
-        format: 'inputCallFormatter'
-      }
-    ],
-    returns: {
-      type: Quantity,
-      desc: 'The id of the actual transaction',
-      format: 'utils.toDecimal'
-    }
-  },
-
   releasesInfo: {
     desc: 'returns a ReleasesInfo object describing the current status of releases',
     params: [],
@@ -384,7 +354,7 @@ export default {
     }
   },
 
-  signerPortt: {
+  signerPort: {
     section: SECTION_NODE,
     desc: 'Returns the port the signer is running on, error if not enabled',
     params: [],
@@ -422,6 +392,22 @@ export default {
       type: Object,
       desc: '{"hash":H,"track":T,"version":{"major":N,"minor":N,"patch":N}} (H is a 160-bit Git commit hash, T is a ReleaseTrack, either "stable", "beta", "nightly" or "unknown" and N is a version number)'
     }
+  },
+
+  listAccounts: {
+    desc: 'TODO'
+  },
+
+  listStorageKeys: {
+    desc: 'TODO'
+  },
+
+  encryptMessage: {
+    desc: 'TODO'
+  },
+
+  futureTransactions: {
+    desc: 'TODO'
   },
 
   /*
