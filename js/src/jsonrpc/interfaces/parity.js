@@ -23,18 +23,109 @@ const SECTION_NODE = 'Node Settings';
 const SECTION_NET = 'Network Information';
 const SECTION_ACCOUNTS = 'Accounts (read-only) and Signatures';
 
+const transactionDetails = {
+  hash: {
+    type: Hash,
+    desc: '32 Bytes - hash of the transaction.'
+  },
+  nonce: {
+    type: Quantity,
+    desc: 'The number of transactions made by the sender prior to this one.'
+  },
+  blockHash: {
+    type: Hash,
+    desc: '32 Bytes - hash of the block where this transaction was in. `null` when its pending.'
+  },
+  blockNumber: {
+    type: BlockNumber,
+    desc: 'Block number where this transaction was in. `null` when its pending.'
+  },
+  transactionIndex: {
+    type: Quantity,
+    desc: 'Integer of the transactions index position in the block. `null` when its pending.'
+  },
+  from: {
+    type: Address,
+    desc: '20 Bytes - address of the sender.'
+  },
+  to: {
+    type: Address,
+    desc: '20 Bytes - address of the receiver. `null` when its a contract creation transaction.'
+  },
+  value: {
+    type: Quantity,
+    desc: 'Value transferred in Wei.'
+  },
+  gasPrice: {
+    type: Quantity,
+    desc: 'Gas price provided by the sender in Wei.'
+  },
+  gas: {
+    type: Quantity,
+    desc: 'Gas provided by the sender.'
+  },
+  input: {
+    type: Data,
+    desc: 'The data send along with the transaction.'
+  },
+  raw: {
+    type: Data,
+    desc: 'Raw transaction data.'
+  },
+  publicKey: {
+    type: Data,
+    desc: 'Public key of the signer.'
+  },
+  networkId: {
+    type: Quantity,
+    desc: 'The network id of the transaction, if any.'
+  },
+  standardV: {
+    type: Quantity,
+    desc: 'The standardized V field of the signature (0 or 1).'
+  },
+  v: {
+    type: Quantity,
+    desc: 'The V field of the signature.'
+  },
+  r: {
+    type: Quantity,
+    desc: 'The R field of the signature.'
+  },
+  s: {
+    type: Quantity,
+    desc: 'The S field of the signature.'
+  },
+  minBlock: {
+    type: BlockNumber,
+    optional: true,
+    desc: 'Block number, tag or `null`.'
+  }
+};
+
 export default {
   accountsInfo: {
     section: SECTION_ACCOUNTS,
-    desc: 'returns a map of accounts as an object',
+    desc: 'Provides metadata for accounts.',
     params: [],
     returns: {
-      type: Array,
-      desc: 'Account metadata',
+      type: Object,
+      desc: 'Maps account address to metadata.',
       details: {
         name: {
           type: String,
           desc: 'Account name'
+        }
+      },
+      example: {
+        '0x0024d0c7ab4c52f723f3aaf0872b9ea4406846a4': {
+          name: 'Foo'
+        },
+        '0x004385d8be6140e6f889833f68b51e17b6eacb29': {
+          name: 'Bar'
+        },
+        '0x009047ed78fa2be48b62aaf095b64094c934dab0': {
+          name: 'Baz'
         }
       }
     }
@@ -68,21 +159,23 @@ export default {
 
   dappsPort: {
     section: SECTION_NODE,
-    desc: 'Returns the port the dapps are running on, error if not enabled',
+    desc: 'Returns the port the dapps are running on, error if not enabled.',
     params: [],
     returns: {
       type: Quantity,
-      desc: 'The port number'
+      desc: 'The port number',
+      example: 8080
     }
   },
 
   dappsInterface: {
     section: SECTION_NODE,
-    desc: 'Returns the interface the dapps are running on, error if not enabled',
+    desc: 'Returns the interface the dapps are running on, error if not enabled.',
     params: [],
     returns: {
       type: String,
-      desc: 'The interface'
+      desc: 'The interface',
+      example: '127.0.0.1'
     }
   },
 
@@ -92,17 +185,25 @@ export default {
     params: [],
     returns: {
       type: Data,
-      desc: 'Extra data'
+      desc: 'Extra data',
+      example: '0xd5830106008650617269747986312e31342e30826c69'
     }
   },
 
   devLogs: {
     section: SECTION_DEV,
-    desc: 'Returns latest logs of your node',
+    desc: 'Returns latest stdout logs of your node.',
     params: [],
     returns: {
       type: Array,
-      desc: 'Development logs'
+      desc: 'Development logs',
+      example: [
+        '2017-01-20 18:14:19  Updated conversion rate to Ξ1 = US$10.63 (11199212000 wei/gas)',
+        '2017-01-20 18:14:19  Configured for DevelopmentChain using InstantSeal engine',
+        '2017-01-20 18:14:19  Operating mode: active',
+        '2017-01-20 18:14:19  State DB configuration: fast',
+        '2017-01-20 18:14:19  Starting Parity/v1.6.0-unstable-2ae8b4c-20170120/x86_64-linux-gnu/rustc1.14.0'
+      ]
     }
   },
 
@@ -129,11 +230,12 @@ export default {
 
   extraData: {
     section: SECTION_MINING,
-    desc: 'Returns currently set extra data',
+    desc: 'Returns currently set extra data.',
     params: [],
     returns: {
       type: Data,
-      desc: 'Extra data'
+      desc: 'Extra data.',
+      example: '0xd5830106008650617269747986312e31342e30826c69'
     }
   },
 
@@ -144,7 +246,8 @@ export default {
     returns: {
       type: Quantity,
       desc: 'Gas floor target.',
-      format: 'outputBigNumberFormatter'
+      format: 'outputBigNumberFormatter',
+      example: fromDecimal(4700000)
     }
   },
 
@@ -155,7 +258,8 @@ export default {
     returns: {
       type: Quantity,
       desc: 'Gas ceiling target.',
-      format: 'outputBigNumberFormatter'
+      format: 'outputBigNumberFormatter',
+      example: fromDecimal(6283184)
     }
   },
 
@@ -214,17 +318,19 @@ export default {
     returns: {
       type: Quantity,
       desc: 'Minimal Gas Price',
-      format: 'outputBigNumberFormatter'
+      format: 'outputBigNumberFormatter',
+      example: fromDecimal(11262783488)
     }
   },
 
   mode: {
     section: SECTION_NODE,
-    desc: 'Get the mode. Results one of: "active", "passive", "dark", "offline".',
+    desc: 'Get the mode. Results one of: `"active"`, `"passive"`, `"dark"`, `"offline"`.',
     params: [],
     returns: {
       type: String,
-      desc: 'The mode'
+      desc: 'The mode.',
+      example: 'active'
     }
   },
 
@@ -234,7 +340,8 @@ export default {
     params: [],
     returns: {
       type: String,
-      desc: 'chain name'
+      desc: 'chain name.',
+      example: 'homestead'
     }
   },
 
@@ -243,17 +350,32 @@ export default {
     desc: 'Returns number of peers.',
     params: [],
     returns: {
-      type: Quantity,
-      desc: 'Number of peers'
-    }
-  },
-
-  netMaxPeers: {
-    desc: 'Returns maximal number of peers.',
-    params: [],
-    returns: {
-      type: Quantity,
-      desc: 'Maximal number of peers'
+      type: Object,
+      desc: 'Number of peers',
+      details: {
+        active: {
+          type: Quantity,
+          desc: 'Number of active peers.'
+        },
+        connected: {
+          type: Quantity,
+          desc: 'Number of connected peers.'
+        },
+        max: {
+          type: Quantity,
+          desc: 'Maximum number of connected peers.'
+        },
+        peers: {
+          type: Array,
+          desc: 'List of all peers with details.'
+        }
+      },
+      example: {
+        active: 0,
+        connected: 25,
+        max: 25,
+        peers: [DUMMY, DUMMY, DUMMY, DUMMY]
+      }
     }
   },
 
@@ -263,7 +385,8 @@ export default {
     params: [],
     returns: {
       type: Quantity,
-      desc: 'Port Number'
+      desc: 'Port number',
+      example: 30303
     }
   },
 
@@ -299,16 +422,52 @@ export default {
     params: [],
     returns: {
       type: Array,
-      desc: 'Transactions ordered by priority'
+      desc: 'Transactions ordered by priority',
+      details: transactionDetails,
+      example: [
+        {
+          blockHash: null,
+          blockNumber: null,
+          creates: null,
+          from: '0xee3ea02840129123d5397f91be0391283a25bc7d',
+          gas: '0x23b58',
+          gasPrice: '0xba43b7400',
+          hash: '0x160b3c30ab1cf5871083f97ee1cee3901cfba3b0a2258eb337dd20a7e816b36e',
+          input: '0x095ea7b3000000000000000000000000bf4ed7b27f1d666546e30d74d50d173d20bca75400000000000000000000000000002643c948210b4bd99244ccd64d5555555555',
+          minBlock: null,
+          networkId: 1,
+          nonce: '0x5',
+          publicKey: '0x96157302dade55a1178581333e57d60ffe6fdf5a99607890456a578b4e6b60e335037d61ed58aa4180f9fd747dc50d44a7924aa026acbfb988b5062b629d6c36',
+          r: '0x92e8beb19af2bad0511d516a86e77fa73004c0811b2173657a55797bdf8558e1',
+          raw: '0xf8aa05850ba43b740083023b5894bb9bc244d798123fde783fcc1c72d3bb8c18941380b844095ea7b3000000000000000000000000bf4ed7b27f1d666546e30d74d50d173d20bca75400000000000000000000000000002643c948210b4bd99244ccd64d555555555526a092e8beb19af2bad0511d516a86e77fa73004c0811b2173657a55797bdf8558e1a062b4d4d125bbcb9c162453bc36ca156537543bb4414d59d1805d37fb63b351b8',
+          s: '0x62b4d4d125bbcb9c162453bc36ca156537543bb4414d59d1805d37fb63b351b8',
+          standardV: '0x1',
+          to: '0xbb9bc244d798123fde783fcc1c72d3bb8c189413',
+          transactionIndex: null,
+          v: '0x26',
+          value: '0x0'
+        },
+        DUMMY,
+        DUMMY
+      ]
     }
   },
 
   pendingTransactionsStats: {
-    desc: 'Returns propagation stats for transactions in the queue',
+    desc: 'Returns propagation stats for transactions in the queue.',
     params: [],
     returns: {
       type: Object,
-      desc: 'mapping of `tx hash` into `stats`'
+      desc: 'mapping of transaction hashes to stats.',
+      example: {
+        '0xdff37270050bcfba242116c745885ce2656094b2d3a0f855649b4a0ee9b5d15a': {
+          firstSeen: 3032066,
+          propagatedTo: {
+            '0x605e04a43b1156966b3a3b66b980c87b7f18522f7f712035f84576016be909a2798a438b2b17b1a8c58db314d88539a77419ca4be36148c086900fba487c9d39': 1,
+            '0xbab827781c852ecf52e7c8bf89b806756329f8cbf8d3d011e744a0bc5e3a0b0e1095257af854f3a8415ebe71af11b0c537f8ba797b25972f519e75339d6d1864': 1
+          }
+        }
+      }
     }
   },
 
@@ -348,11 +507,30 @@ export default {
 
   rpcSettings: {
     section: SECTION_NET,
-    desc: 'Returns basic settings of rpc (enabled, port, interface).',
+    desc: 'Provides current JSON-RPC API settings.',
     params: [],
     returns: {
       type: Object,
-      desc: 'JSON object containing rpc settings'
+      desc: 'JSON-RPC settings.',
+      details: {
+        enabled: {
+          type: Boolean,
+          desc: '`true` if JSON-RPC is enabled (default).'
+        },
+        interface: {
+          type: String,
+          desc: 'Interface on which JSON-RPC is running.'
+        },
+        port: {
+          type: Quantity,
+          desc: 'Port on which JSON-RPC is running.'
+        }
+      },
+      example: {
+        enabled: true,
+        interface: 'local',
+        port: 8545
+      }
     }
   },
 
@@ -362,7 +540,8 @@ export default {
     params: [],
     returns: {
       type: Quantity,
-      desc: 'The port number'
+      desc: 'The port number',
+      example: 8180
     }
   },
 
@@ -372,8 +551,9 @@ export default {
     params: [],
     returns: {
       type: Quantity,
-      desc: 'Current max number of transactions in queue',
-      format: 'outputBigNumberFormatter'
+      desc: 'Current max number of transactions in queue.',
+      format: 'outputBigNumberFormatter',
+      example: 1024
     }
   },
 
@@ -383,16 +563,40 @@ export default {
     params: [],
     returns: {
       type: Quantity,
-      desc: 'Number of unsigned transactions'
+      desc: 'Number of unsigned transactions',
+      example: 0
     }
   },
 
   versionInfo: {
-    desc: 'returns a VersionInfo object describing our current version',
+    desc: 'Provides information about running version of Parity.',
     params: [],
     returns: {
       type: Object,
-      desc: '{"hash":H,"track":T,"version":{"major":N,"minor":N,"patch":N}} (H is a 160-bit Git commit hash, T is a ReleaseTrack, either "stable", "beta", "nightly" or "unknown" and N is a version number)'
+      desc: 'Information on current version.',
+      details: {
+        hash: {
+          type: Hash,
+          desc: '20 Byte hash of the current build.'
+        },
+        track: {
+          type: String,
+          desc: 'Track on which it was released, one of: `"stable"`, `"beta"`, `"nightly"`, `"testing"`, `"null"` (unknown or self-built).'
+        },
+        version: {
+          type: Object,
+          desc: 'Version number composed of `major`, `minor` and `patch` integers.'
+        }
+      },
+      example: {
+        hash: '0x2ae8b4ca278dd7b896090366615fef81cbbbc0e0',
+        track: 'null',
+        version: {
+          major: 1,
+          minor: 6,
+          patch: 0
+        }
+      }
     }
   },
 
@@ -400,7 +604,7 @@ export default {
     desc: 'Returns all addresses if Fat DB is enabled (`--fat-db`), `null` otherwise.',
     params: [
       {
-        type: Number,
+        type: Quantity,
         desc: 'Integer number of addresses to display in a batch.',
         example: 5
       },
@@ -438,7 +642,7 @@ export default {
         example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
       },
       {
-        type: Number,
+        type: Quantity,
         desc: 'Integer number of addresses to display in a batch.',
         example: 5
       },
@@ -494,52 +698,7 @@ export default {
     returns: {
       type: Array,
       desc: 'Transaction list.',
-      details: {
-        hash: {
-          type: Hash,
-          desc: '32 Bytes - hash of the transaction.'
-        },
-        nonce: {
-          type: Quantity,
-          desc: 'the number of transactions made by the sender prior to this one.'
-        },
-        blockHash: {
-          type: Hash,
-          desc: '32 Bytes - hash of the block where this transaction was in. `null` when its pending.'
-        },
-        blockNumber: {
-          type: BlockNumber,
-          desc: 'block number where this transaction was in. `null` when its pending.'
-        },
-        transactionIndex: {
-          type: Quantity,
-          desc: 'integer of the transactions index position in the block. `null` when its pending.'
-        },
-        from: {
-          type: Address,
-          desc: '20 Bytes - address of the sender.'
-        },
-        to: {
-          type: Address,
-          desc: '20 Bytes - address of the receiver. `null` when its a contract creation transaction.'
-        },
-        value: {
-          type: Quantity,
-          desc: 'value transferred in Wei.'
-        },
-        gasPrice: {
-          type: Quantity,
-          desc: 'gas price provided by the sender in Wei.'
-        },
-        gas: {
-          type: Quantity,
-          desc: 'gas provided by the sender.'
-        },
-        input: {
-          type: Data,
-          desc: 'the data send along with the transaction.'
-        }
-      },
+      details: transactionDetails,
       example: [
         {
           hash: '0x80de421cd2e7e46824a91c343ca42b2ff339409eef09e2d9d73882462f8fce31',
