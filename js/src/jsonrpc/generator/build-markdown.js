@@ -48,6 +48,10 @@ function formatDescription (obj, prefix = '', indent = '') {
 }
 
 function formatType (obj) {
+  if (obj == null) {
+    return obj;
+  }
+
   if (obj.type === Object && obj.details) {
     const sub = Object.keys(obj.details).map((key) => {
       return formatDescription(obj.details[key], `\`${key}\`: `, '    - ');
@@ -80,10 +84,11 @@ function isObject (val) {
   return val != null && val.constructor === Object;
 }
 
-// Checks if a field definition has an example, or describes an object
-// with fields that recursively have examples of their own.
-function hasExample ({ example, details }) {
-  if (example !== undefined) {
+// Checks if a field definition has an example,
+// or describes an object with fields that recursively have examples of their own,
+// or is optional.
+function hasExample ({ optional, example, details } = {}) {
+  if (optional || example !== undefined) {
     return true;
   }
 
@@ -96,10 +101,17 @@ function hasExample ({ example, details }) {
   return false;
 }
 
+// Remove all optional (trailing) params without examples from an array
+function removeOptionalWithoutExamples (arr) {
+  return arr.filter(({ optional, example, details }) => {
+    return !optional || example !== undefined || details !== undefined;
+  });
+}
+
 // Grabs JSON compatible
 function getExample (obj) {
   if (Array.isArray(obj)) {
-    return obj.map(getExample);
+    return removeOptionalWithoutExamples(obj).map(getExample);
   }
 
   const { example, details } = obj;
@@ -108,7 +120,7 @@ function getExample (obj) {
     const nested = {};
 
     Object.keys(details).forEach((key) => {
-      example[key] = getExample(details[key]);
+      nested[key] = getExample(details[key]);
     });
 
     return nested;

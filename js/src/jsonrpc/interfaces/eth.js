@@ -23,6 +23,7 @@ export default withPreamble(`
 
 The following methods have an optional extra \`defaultBlock\` parameter:
 
+- [eth_estimateGas](#eth_estimategas)
 - [eth_getBalance](#eth_getbalance)
 - [eth_getCode](#eth_getcode)
 - [eth_getTransactionCount](#eth_gettransactioncount)
@@ -34,7 +35,7 @@ When requests are made that act on the state of Ethereum, the last parameter det
 The following options are possible for the \`defaultBlock\` parameter:
 
 - \`Quantity\`/\`Integer\` - an integer block number;
-- \`String "earliest"\` for the earliest/genesis block;
+- \`String "earliest"\` - for the earliest/genesis block;
 - \`String "latest"\` - for the latest mined block;
 - \`String "pending"\` - for the pending state/transactions.
 
@@ -107,7 +108,7 @@ The following options are possible for the \`defaultBlock\` parameter:
         type: BlockNumber,
         desc: 'Integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
         format: 'inputDefaultBlockNumberFormatter',
-        example: 'latest'
+        optional: true
       }
     ],
     returns: {
@@ -183,6 +184,12 @@ The following options are possible for the \`defaultBlock\` parameter:
         desc: 'See [eth_call](#eth_call) parameters, expect that all properties are optional.',
         format: 'inputCallFormatter',
         example: DUMMY // will be replaced with { ... } by the generator
+      },
+      {
+        type: BlockNumber,
+        desc: 'Integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
+        format: 'inputDefaultBlockNumberFormatter',
+        optional: true
       }
     ],
     returns: {
@@ -238,7 +245,7 @@ The following options are possible for the \`defaultBlock\` parameter:
         type: BlockNumber,
         desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
         format: 'inputDefaultBlockNumberFormatter',
-        example: 'latest'
+        optional: true
       }
     ],
     returns: {
@@ -557,7 +564,8 @@ The following options are possible for the \`defaultBlock\` parameter:
         type: BlockNumber,
         desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
         format: 'inputDefaultBlockNumberFormatter',
-        example: fromDecimal(2)
+        example: fromDecimal(2),
+        optional: true
       }
     ],
     returns: {
@@ -688,7 +696,7 @@ The following options are possible for the \`defaultBlock\` parameter:
         type: BlockNumber,
         desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`, see the [default block parameter](#the-default-block-parameter).',
         format: 'inputDefaultBlockNumberFormatter',
-        example: 'latest'
+        optional: true
       }
     ],
     returns: {

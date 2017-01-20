@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Address, Data, Hash, Quantity } from '../types';
-import { fromDecimal } from '../helpers';
+import { Address, Data, Hash, Quantity, BlockNumber } from '../types';
+import { fromDecimal, withComment, DUMMY } from '../helpers';
 
 const SECTION_MINING = 'Block Authoring (aka "mining")';
 const SECTION_DEV = 'Development';
@@ -118,11 +118,12 @@ export default {
 
   enode: {
     section: SECTION_NODE,
-    desc: 'Returns the node enode URI',
+    desc: 'Returns the node enode URI.',
     params: [],
     returns: {
       type: String,
-      desc: 'Enode URI'
+      desc: 'Enode URI',
+      example: 'enode://050929adcfe47dbe0b002cb7ef2bf91ca74f77c4e0f68730e39e717f1ce38908542369ae017148bee4e0d968340885e2ad5adea4acd19c95055080a4b625df6a@172.17.0.1:30303'
     }
   },
 
@@ -283,11 +284,12 @@ export default {
 
   nodeName: {
     section: SECTION_NODE,
-    desc: 'Returns node name (identity)',
+    desc: 'Returns node name, set when starting parity with `--identity NAME`.',
     params: [],
     returns: {
       type: String,
-      desc: 'Node name'
+      desc: 'Node name.',
+      example: 'Doge'
     }
   },
 
@@ -395,19 +397,176 @@ export default {
   },
 
   listAccounts: {
-    desc: 'TODO'
+    desc: 'Returns all addresses if Fat DB is enabled (`--fat-db`), `null` otherwise.',
+    params: [
+      {
+        type: Number,
+        desc: 'Integer number of addresses to display in a batch.',
+        example: 5
+      },
+      {
+        type: Address,
+        desc: '20 Bytes - Offset address from which the batch should start in order, or `null`.',
+        example: null
+      },
+      {
+        type: BlockNumber,
+        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`.',
+        format: 'inputDefaultBlockNumberFormatter',
+        optional: true
+      }
+    ],
+    returns: {
+      type: Array,
+      desc: 'Requested number of `Address`es or `null` if Fat DB is not enabled.',
+      example: [
+        '0x7205b1bb42edce6e0ced37d1fd0a9d684f5a860f',
+        '0x98a2559a814c300b274325c92df1682ae0d344e3',
+        '0x2d7a7d0adf9c5f9073fefbdc18188bd23c68b633',
+        '0xd4bb3284201db8b03c06d8a3057dd32538e3dfda',
+        '0xa6396904b08aa31300ca54278b8e066ecc38e4a0'
+      ]
+    }
   },
 
   listStorageKeys: {
-    desc: 'TODO'
+    desc: 'Returns all storage keys of the given address (first parameter) if Fat DB is enabled (`--fat-db`), `null` otherwise.',
+    params: [
+      {
+        type: Address,
+        desc: '20 Bytes - Account for which to retrieve the storage keys.',
+        example: '0x407d73d8a49eeb85d32cf465507dd71d507100c1'
+      },
+      {
+        type: Number,
+        desc: 'Integer number of addresses to display in a batch.',
+        example: 5
+      },
+      {
+        type: Hash,
+        desc: '32 Bytes - Offset storage key from which the batch should start in order, or `null`.',
+        example: null
+      },
+      {
+        type: BlockNumber,
+        desc: 'integer block number, or the string `\'latest\'`, `\'earliest\'` or `\'pending\'`.',
+        format: 'inputDefaultBlockNumberFormatter',
+        optional: true
+      }
+    ],
+    returns: {
+      type: Array,
+      desc: 'Requested number of 32 byte long storage keys for the given account or `null` if Fat DB is not enabled.',
+      example: [
+        '0xaab1a2940583e213f1d57a3ed358d5f5406177c8ff3c94516bfef3ea62d00c22',
+        '0xba8469eca5641b186e86cbc5343dfa5352df04feb4564cd3cf784f213aaa0319',
+        '0x769d107ba778d90205d7a159e820c41c20bf0783927b426c602561e74b7060e5',
+        '0x0289865bcaa58f7f5bf875495ac7af81e3630eb88a3a0358407c7051a850624a',
+        '0x32e0536502b9163b0a1ce6e3aabd95fa4a2bf602bbde1b9118015648a7a51178'
+      ]
+    }
   },
 
   encryptMessage: {
-    desc: 'TODO'
+    desc: 'Encrypt some data with a public key under ECIES.',
+    params: [
+      {
+        type: Hash,
+        desc: 'Public EC key generated with `secp256k1` curve, truncated to the last 64 bytes.',
+        example: '0xD219959D466D666060284733A80DDF025529FEAA8337169540B3267B8763652A13D878C40830DD0952639A65986DBEC611CF2171A03CFDC37F5A40537068AA4F'
+      },
+      {
+        type: Data,
+        desc: 'The message to encrypt.',
+        example: withComment('0x68656c6c6f20776f726c64', '"hello world"')
+      }
+    ],
+    returns: {
+      type: Data,
+      desc: 'Encrypted message.',
+      example: '0x0491debeec5e874a453f84114c084c810708ebcb553b02f1b8c05511fa4d1a25fa38eb49a32c815e2b39b7bcd56d66648bf401067f15413dae683084ca7b01e21df89be9ec4bc6c762a657dbd3ba1540f557e366681b53629bb2c02e1443b5c0adc6b68f3442c879456d6a21ec9ed07847fa3c3ecb73ec7ee9f8e32d'
+    }
   },
 
   futureTransactions: {
-    desc: 'TODO'
+    desc: 'Returns all future transactions from transaction queue.',
+    params: [],
+    returns: {
+      type: Array,
+      desc: 'Transaction list.',
+      details: {
+        hash: {
+          type: Hash,
+          desc: '32 Bytes - hash of the transaction.'
+        },
+        nonce: {
+          type: Quantity,
+          desc: 'the number of transactions made by the sender prior to this one.'
+        },
+        blockHash: {
+          type: Hash,
+          desc: '32 Bytes - hash of the block where this transaction was in. `null` when its pending.'
+        },
+        blockNumber: {
+          type: BlockNumber,
+          desc: 'block number where this transaction was in. `null` when its pending.'
+        },
+        transactionIndex: {
+          type: Quantity,
+          desc: 'integer of the transactions index position in the block. `null` when its pending.'
+        },
+        from: {
+          type: Address,
+          desc: '20 Bytes - address of the sender.'
+        },
+        to: {
+          type: Address,
+          desc: '20 Bytes - address of the receiver. `null` when its a contract creation transaction.'
+        },
+        value: {
+          type: Quantity,
+          desc: 'value transferred in Wei.'
+        },
+        gasPrice: {
+          type: Quantity,
+          desc: 'gas price provided by the sender in Wei.'
+        },
+        gas: {
+          type: Quantity,
+          desc: 'gas provided by the sender.'
+        },
+        input: {
+          type: Data,
+          desc: 'the data send along with the transaction.'
+        }
+      },
+      example: [
+        {
+          hash: '0x80de421cd2e7e46824a91c343ca42b2ff339409eef09e2d9d73882462f8fce31',
+          nonce: '0x1',
+          blockHash: null,
+          blockNumber: null,
+          transactionIndex: null,
+          from: '0xe53e478c072265e2d9a99a4301346700c5fbb406',
+          to: '0xf5d405530dabfbd0c1cab7a5812f008aa5559adf',
+          value: '0x2efc004ac03a4996',
+          gasPrice: '0x4a817c800',
+          gas: '0x5208',
+          input: '0x',
+          creates: null,
+          raw: '0xf86c018504a817c80082520894f5d405530dabfbd0c1cab7a5812f008aa5559adf882efc004ac03a49968025a0b40c6967a7e8bbdfd99a25fd306b9ef23b80e719514aeb7ddd19e2303d6fc139a06bf770ab08119e67dc29817e1412a0e3086f43da308c314db1b3bca9fb6d32bd',
+          publicKey: '0xeba33fd74f06236e17475bc5b6d1bac718eac048350d77d3fc8fbcbd85782a57c821255623c4fd1ebc9d555d07df453b2579ee557b7203fc256ca3b3401e4027',
+          networkId: 1,
+          standardV: '0x0',
+          v: '0x25',
+          r: '0xb40c6967a7e8bbdfd99a25fd306b9ef23b80e719514aeb7ddd19e2303d6fc139',
+          s: '0x6bf770ab08119e67dc29817e1412a0e3086f43da308c314db1b3bca9fb6d32bd',
+          minBlock: null
+        },
+        DUMMY,
+        DUMMY
+      ]
+    }
   },
 
   /*
